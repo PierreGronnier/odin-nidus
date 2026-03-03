@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap");
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: "Outfit", sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video {
+  max-width: 100%;
+  display: block;
+}
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+input,
+textarea {
+  font-family: inherit;
+}
+ul,
+ol {
+  list-style: none;
+}
+
+:root {
+  /* Backgrounds */
+  --bg-base: #0c0b09;
+  --bg-surface: #131210;
+  --bg-elevated: #1c1a16;
+  --bg-hover: #242118;
+
+  /* Accent */
+  --accent: #e8622a;
+  --accent-hover: #f0743c;
+  --accent-muted: #e8622a18;
+
+  /* Textes */
+  --text-primary: #f2ece2;
+  --text-secondary: #a89880;
+  --text-muted: #5a5040;
+
+  /* Utilitaires */
+  --border: #2a2520;
+  --border-light: #1e1c18;
+  --success: #4caf88;
+  --danger: #e05c5c;
+
+  /* Rayons */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Ombres */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* Transitions */
+  --transition: 150ms ease;
+}
