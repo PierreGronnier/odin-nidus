@@ -19,4 +19,19 @@ function registerValidator(req, res, next) {
   next();
 }
 
-export { registerValidator };
+const loginSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+function loginValidator(req, res, next) {
+  const result = loginSchema.safeParse(req.body);
+
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
+  }
+
+  next();
+}
+
+export { registerValidator, loginValidator };
