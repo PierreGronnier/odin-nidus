@@ -28,4 +28,11 @@ async function login(email, password) {
   return user;
 }
 
-export { register, login };
+async function logout(userId) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { lastSeenAt: new Date() },
+  });
+}
+
+export { register, login, logout };

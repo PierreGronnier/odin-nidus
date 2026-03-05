@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   registerController,
   loginController,
+  logoutController,
+  refreshController,
 } from "../controllers/auth.controller.js";
 import {
   registerValidator,
@@ -12,5 +14,7 @@ const authRouter = Router();
 
 authRouter.post("/register", registerValidator, registerController);
 authRouter.post("/login", loginValidator, loginController);
+authRouter.post("/logout", logoutController);
+authRouter.post("/refresh", refreshController);
 
 export { authRouter };
