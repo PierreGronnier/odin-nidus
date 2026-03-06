@@ -9,12 +9,13 @@ import {
   registerValidator,
   loginValidator,
 } from "../validators/auth.validator.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const authRouter = Router();
 
 authRouter.post("/register", registerValidator, registerController);
 authRouter.post("/login", loginValidator, loginController);
-authRouter.post("/logout", logoutController);
+authRouter.post("/logout", authMiddleware, logoutController);
 authRouter.post("/refresh", refreshController);
 
 export { authRouter };

@@ -8,4 +8,11 @@ async function findUserById(id) {
   return await prisma.user.findUnique({ where: { id } });
 }
 
-export { findUserById, findUserByEmail };
+async function updateUser(id, data) {
+  return await prisma.user.update({
+    where: { id },
+    data,
+  });
+}
+
+export { findUserById, findUserByEmail, updateUser };

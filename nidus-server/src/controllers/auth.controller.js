@@ -43,6 +43,7 @@ async function loginController(req, res, next) {
 
 async function logoutController(req, res, next) {
   try {
+    await logout(req.user.id);
     res.clearCookie("refreshToken");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
