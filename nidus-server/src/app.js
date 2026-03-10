@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 import { conversationRouter } from "./routes/conversation.routes.js";
+import { messageRouter } from "./routes/message.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/conversations", conversationRouter);
+app.use("/api/conversations/:conversationId/messages", messageRouter);
 
 app.use(errorHandler);
 

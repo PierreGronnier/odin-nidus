@@ -20,9 +20,13 @@ conversationRouter.post(
   createConversationValidator,
   createConversationController,
 );
-conversationRouter.get("/:id", authMiddleware, getConversationByIdController);
+conversationRouter.get(
+  "/:conversationId",
+  authMiddleware,
+  getConversationByIdController,
+);
 conversationRouter.put(
-  "/:id",
+  "/:conversationId",
   authMiddleware,
   updateConversationValidator,
   updateConversationController,

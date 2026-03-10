@@ -31,7 +31,7 @@ async function getUserConversationsController(req, res, next) {
 
 async function getConversationByIdController(req, res, next) {
   try {
-    const conversation = await getConversationById(req.params.id);
+    const conversation = await getConversationById(req.params.conversationId);
     res.status(200).json(conversation);
   } catch (error) {
     next(error);
@@ -42,7 +42,7 @@ async function updateConversationController(req, res, next) {
   try {
     const { name, avatarUrl } = req.body;
 
-    const conversation = await updateConversation(req.params.id, {
+    const conversation = await updateConversation(req.params.conversationId, {
       name,
       avatarUrl,
     });
