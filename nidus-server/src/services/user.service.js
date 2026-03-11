@@ -15,4 +15,20 @@ async function updateUser(id, data) {
   });
 }
 
-export { findUserById, findUserByEmail, updateUser };
+async function searchUsers(username) {
+  return await prisma.user.findMany({
+    where: {
+      username: {
+        contains: username,
+        mode: "insensitive",
+      },
+    },
+    select: {
+      id: true,
+      username: true,
+      avatarUrl: true,
+    },
+  });
+}
+
+export { findUserById, findUserByEmail, updateUser, searchUsers };
