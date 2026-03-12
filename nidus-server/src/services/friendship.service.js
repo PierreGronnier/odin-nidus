@@ -11,6 +11,21 @@ async function getFriends(userId) {
 }
 
 async function sendFriendRequest(requesterId, receiverId) {
+  const existingRequest = await prisma.friendship.findFirst({
+    where: {
+      OR: [
+        { requesterId, receiverId },
+        { requesterId: receiverId, receiverId: requesterId },
+      ],
+    },
+  });
+
+  if (existingRequest) {
+    const error = new Error("A request has already been sent");
+    error.status = 409;
+    throw error;
+  }
+
   return await prisma.friendship.create({
     data: {
       requesterId,

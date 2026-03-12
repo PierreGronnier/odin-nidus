@@ -1,8 +1,22 @@
 import prisma from "../config/prisma.js";
 import bcrypt from "bcrypt";
-import { findUserByEmail } from "./user.service.js";
+import { findUserByEmail, findUserByUsername } from "./user.service.js";
 
 async function register(email, username, password) {
+  const existingUser = await findUserByEmail(email);
+  if (existingUser) {
+    const error = new Error("Email already in use");
+    error.status = 409;
+    throw error;
+  }
+
+  const existingUsername = await findUserByUsername(username);
+  if (existingUsername) {
+    const error = new Error("Username already in use");
+    error.status = 409;
+    throw error;
+  }
+
   const passwordHash = await bcrypt.hash(password, 10);
 
   return await prisma.user.create({

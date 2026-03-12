@@ -4,6 +4,10 @@ async function findUserByEmail(email) {
   return await prisma.user.findUnique({ where: { email } });
 }
 
+async function findUserByUsername(username) {
+  return await prisma.user.findUnique({ where: { username } });
+}
+
 async function findUserById(id) {
   return await prisma.user.findUnique({ where: { id } });
 }
@@ -31,4 +35,17 @@ async function searchUsers(username) {
   });
 }
 
-export { findUserById, findUserByEmail, updateUser, searchUsers };
+async function findUserByGoogleId(googleId) {
+  return await prisma.user.findUnique({
+    where: { googleId },
+  });
+}
+
+export {
+  findUserById,
+  findUserByEmail,
+  findUserByUsername,
+  updateUser,
+  searchUsers,
+  findUserByGoogleId,
+};

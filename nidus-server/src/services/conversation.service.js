@@ -12,6 +12,24 @@ async function getUserConversations(userId) {
 }
 
 async function createConversation(data, participantIds) {
+  if (!data.isGroup) {
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        isGroup: false,
+        AND: participantIds.map((userId) => ({
+          participants: {
+            some: { userId },
+          },
+        })),
+      },
+    });
+
+    if (existingConversation) {
+      const error = new Error("A DM already exists with this user");
+      error.status = 409;
+      throw error;
+    }
+  }
   return await prisma.conversation.create({
     data: {
       ...data,

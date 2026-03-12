@@ -36,10 +36,14 @@ async function updateMessageController(req, res, next) {
   try {
     const { content, imageUrl } = req.body;
 
-    const updatedMessage = await updateMessage(req.params.messageId, {
-      content,
-      imageUrl,
-    });
+    const updatedMessage = await updateMessage(
+      req.params.messageId,
+      {
+        content,
+        imageUrl,
+      },
+      req.user.id,
+    );
     res.status(200).json(updatedMessage);
   } catch (error) {
     next(error);
@@ -48,7 +52,10 @@ async function updateMessageController(req, res, next) {
 
 async function deleteMessageController(req, res, next) {
   try {
-    const deletedMessage = await deleteMessage(req.params.messageId);
+    const deletedMessage = await deleteMessage(
+      req.params.messageId,
+      req.user.id,
+    );
     res.status(200).json(deletedMessage);
   } catch (error) {
     next(error);

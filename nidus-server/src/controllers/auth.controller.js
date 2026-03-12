@@ -64,9 +64,37 @@ async function refreshController(req, res, next) {
   }
 }
 
+async function googleAuthController(req, res, next) {
+  try {
+    const user = req.user;
+    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: "7d",
+      },
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.redirect(
+      `${process.env.CLIENT_URL}/auth/callback?token=${accessToken}`,
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   registerController,
   loginController,
   logoutController,
   refreshController,
+  googleAuthController,
 };
