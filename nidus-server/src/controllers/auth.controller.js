@@ -6,7 +6,26 @@ async function registerController(req, res, next) {
     const { username, email, password } = req.body;
     const user = await register(email, username, password);
     const { passwordHash, ...safeUser } = user;
-    res.status(201).json({ message: "Account created successfully", safeUser });
+
+    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res
+      .status(201)
+      .json({ message: "Account created successfully", accessToken, safeUser });
   } catch (error) {
     next(error);
   }

@@ -16,10 +16,10 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <div className="nav-logo-wrapper">
+      <Link to="/" className="nav-logo-wrapper">
         <img src={logo} alt="Nidus" className="nav-logo" />
         <span>Nidus</span>
-      </div>
+      </Link>
       <div className="nav-actions">
         <button onClick={toggleTheme}>
           {isLight ? (
