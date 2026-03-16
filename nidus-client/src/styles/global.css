@@ -47,10 +47,10 @@ button {
 }
 
 .btn-ghost {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   padding: 0.6rem 1.4rem;
   border-radius: var(--radius-full);
-  border: 1px solid var(--border);
+  border: 1px solid var(--text-secondary);
   font-size: 0.95rem;
   transition: all var(--transition);
   display: inline-block;
@@ -58,7 +58,7 @@ button {
 
 .btn-ghost:hover {
   color: var(--text-primary);
-  border-color: var(--text-muted);
+  border-color: var(--text-primary);
 }
 
 .btn-large {
