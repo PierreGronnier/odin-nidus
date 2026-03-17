@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import useAuthStore from "../store/authStore";
 import { Sun, Moon } from "lucide-react";
 import logo from "../assets/nidus-logo.svg";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
-  const { user } = useAuthStore();
   const [isLight, setIsLight] = useState(false);
 
   const toggleTheme = () => {
@@ -28,18 +26,14 @@ export default function Navbar() {
             <Sun size={22} color="var(--accent)" />
           )}
         </button>
-        {user ? (
-          <div>{/* avatar + logout */}</div>
-        ) : (
-          <div>
-            <Link to="/login" className="btn-ghost">
-              Log in
-            </Link>
-            <Link to="/register" className="btn-primary">
-              Sign up
-            </Link>
-          </div>
-        )}
+        <div className="nav-links">
+          <Link to="/login" className="btn-ghost">
+            Log in
+          </Link>
+          <Link to="/register" className="btn-primary">
+            Sign up
+          </Link>
+        </div>
       </div>
     </nav>
   );

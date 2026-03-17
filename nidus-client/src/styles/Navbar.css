@@ -29,6 +29,12 @@
   gap: 1rem;
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .nav-theme-btn {
   display: flex;
   align-items: center;
