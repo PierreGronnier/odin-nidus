@@ -1,10 +1,10 @@
 import useAuthStore from "../../store/authStore";
 
-export default function SidebarProfile() {
+export default function SidebarProfile({ onTabChange }) {
   const { user } = useAuthStore();
 
   return (
-    <div className="sidebar-profile">
+    <div className="sidebar-profile" onClick={() => onTabChange("profile")}>
       <div className="sidebar-avatar">
         {user?.avatarUrl ? (
           <img src={user.avatarUrl} alt={user.username} />

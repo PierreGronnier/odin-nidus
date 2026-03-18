@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/sidebar/Sidebar";
+import ProfilePanel from "../components/panels/ProfilePanel";
 import "../styles/AppPage.css";
 
 export default function AppPage() {
@@ -15,7 +16,7 @@ export default function AppPage() {
         selectedFriendId={selectedFriend?.id}
       />
       <main className="app-main">
-        <p>Onglet actif : {activeTab}</p>
+        {activeTab === "profile" && <ProfilePanel />}
       </main>
     </div>
   );

@@ -41,7 +41,7 @@ export default function Sidebar({
         <span className="sidebar-brand">Nidus</span>
       </div>
 
-      <SidebarProfile />
+      <SidebarProfile onTabChange={onTabChange} />
 
       <div className="sidebar-divider" />
 
