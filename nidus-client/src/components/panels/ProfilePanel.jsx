@@ -3,10 +3,12 @@ import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
 import { Mail, Calendar, Clock, Pencil } from "lucide-react";
 import "../../styles/ProfilePanel.css";
+import EditProfileModal from "../modals/EditProfileModal.jsx";
 
 export default function ProfilePanel() {
   const { user, setUser } = useAuthStore();
   const [error, setError] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const getInfo = async () => {
@@ -45,7 +47,7 @@ export default function ProfilePanel() {
               )}
             </p>
           </div>
-          <button className="profile-edit-btn">
+          <button className="profile-edit-btn" onClick={() => setIsOpen(true)}>
             <Pencil size={14} />
             <span>Edit profile</span>
           </button>
@@ -97,6 +99,7 @@ export default function ProfilePanel() {
 
         {error && <p className="profile-error">{error}</p>}
       </div>
+      {isOpen && <EditProfileModal onClose={() => setIsOpen(false)} />}
     </div>
   );
 }
