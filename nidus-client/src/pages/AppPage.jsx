@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "../components/sidebar/Sidebar";
 import ProfilePanel from "../components/panels/ProfilePanel";
+import RequestsPanel from "../components/panels/RequestsPanel";
 import "../styles/AppPage.css";
 
 export default function AppPage() {
@@ -17,6 +18,7 @@ export default function AppPage() {
       />
       <main className="app-main">
         {activeTab === "profile" && <ProfilePanel />}
+        {activeTab === "requests" && <RequestsPanel />}
       </main>
     </div>
   );
