@@ -64,6 +64,29 @@
   margin-bottom: 2rem;
 }
 
+.requests-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.requests-pending-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.requests-pending-list::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+
+.requests-pending-list::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: var(--radius-full);
+}
+
 .requests-user-card {
   display: flex;
   align-items: center;
@@ -107,6 +130,12 @@
   color: var(--text-primary);
 }
 
+.requests-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .requests-add-btn {
   padding: 0.4rem 0.9rem;
   border-radius: var(--radius-full);
@@ -121,6 +150,57 @@
 
 .requests-add-btn:hover {
   background: var(--accent);
+  color: #fff;
+}
+
+.requests-accept-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--success);
+  color: var(--success);
+  font-size: 0.8rem;
+  font-family: inherit;
+  transition: all var(--transition);
+  cursor: pointer;
+  background: none;
+}
+
+.requests-accept-btn:hover {
+  background: var(--success);
+  color: #fff;
+}
+
+.requests-decline-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-family: inherit;
+  transition: all var(--transition);
+  cursor: pointer;
+  background: none;
+}
+
+.requests-decline-btn:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.requests-cancel-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: inherit;
+  transition: all var(--transition);
+  cursor: pointer;
+  background: none;
+}
+
+.requests-cancel-btn:hover {
+  background: var(--text-muted);
   color: #fff;
 }
 
@@ -140,4 +220,6 @@
   font-size: 0.85rem;
   color: var(--text-muted);
   font-style: italic;
+  text-align: center;
+  padding: 2rem 0;
 }

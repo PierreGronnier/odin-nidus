@@ -6,12 +6,17 @@ import {
   declineFriendRequestController,
   blockUserController,
   removeFriendController,
+  getPendingRequestsController,
+  getSentRequestsController,
+  cancelFriendRequestController,
 } from "../controllers/friendship.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const friendshipRouter = Router();
 
 friendshipRouter.get("/", authMiddleware, getFriendsController);
+friendshipRouter.get("/pending", authMiddleware, getPendingRequestsController);
+friendshipRouter.get("/sent", authMiddleware, getSentRequestsController);
 friendshipRouter.post("/", authMiddleware, sendFriendRequestController);
 friendshipRouter.put(
   "/:friendshipId/accept",
@@ -32,6 +37,11 @@ friendshipRouter.delete(
   "/:friendshipId",
   authMiddleware,
   removeFriendController,
+);
+friendshipRouter.delete(
+  "/:friendshipId/cancel",
+  authMiddleware,
+  cancelFriendRequestController,
 );
 
 export { friendshipRouter };
