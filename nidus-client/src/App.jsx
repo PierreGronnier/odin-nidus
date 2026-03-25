@@ -12,19 +12,26 @@ import api from "./services/axios";
 import useAuthStore from "./store/authStore";
 
 export default function App() {
-  const { setAccessToken } = useAuthStore();
+  const { setAccessToken, setUser } = useAuthStore();
 
   useEffect(() => {
-    const refresh = async () => {
+    const initAuth = async () => {
       try {
-        const response = await api.post("/auth/refresh");
-        setAccessToken(response.data.accessToken);
+        const refreshResponse = await api.post("/auth/refresh");
+        const token = refreshResponse.data.accessToken;
+        setAccessToken(token);
+
+        const userResponse = await api.get("/users/me");
+        setUser(userResponse.data);
       } catch {
-        // pas connecté
+        console.warn("Session not found or expired");
+        setUser(null);
+        setAccessToken(null);
       }
     };
-    refresh();
-  }, []);
+
+    initAuth();
+  }, [setAccessToken, setUser]);
 
   return (
     <Routes>

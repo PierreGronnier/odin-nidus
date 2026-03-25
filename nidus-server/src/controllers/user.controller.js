@@ -26,8 +26,12 @@ async function getUserById(req, res, next) {
 
 async function updateUserInfo(req, res, next) {
   try {
-    const { bio, avatarUrl } = req.body;
-    const updatedUser = await updateUser(req.user.id, { bio, avatarUrl });
+    const { bio, avatarUrl, username } = req.body;
+    const updatedUser = await updateUser(req.user.id, {
+      bio,
+      avatarUrl,
+      username,
+    });
     const { passwordHash, googleId, ...safeUpdatedUser } = updatedUser;
     res.status(200).json(safeUpdatedUser);
   } catch (error) {

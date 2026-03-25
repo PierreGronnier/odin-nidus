@@ -13,12 +13,32 @@ async function findUserById(id) {
 }
 
 async function updateUser(id, data) {
+  const currentUser = await findUserById(id);
+
+  if (!currentUser) {
+    const error = new Error("User not found.");
+    error.status = 404;
+    throw error;
+  }
+
+  const oldUsername = currentUser.username;
+  const newUsername = data.username;
+
+  if (newUsername && newUsername !== oldUsername) {
+    const existingUser = await findUserByUsername(newUsername);
+
+    if (existingUser) {
+      const error = new Error("This username is already taken.");
+      error.status = 409;
+      throw error;
+    }
+  }
+
   return await prisma.user.update({
     where: { id },
     data,
   });
 }
-
 async function searchUsers(username) {
   return await prisma.user.findMany({
     where: {
