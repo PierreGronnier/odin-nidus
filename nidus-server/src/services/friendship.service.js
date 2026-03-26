@@ -7,6 +7,14 @@ async function getFriends(userId) {
       status: FriendshipStatus.ACCEPTED,
       OR: [{ requesterId: userId }, { receiverId: userId }],
     },
+    include: {
+      requester: {
+        select: { id: true, username: true, avatarUrl: true, bio: true },
+      },
+      receiver: {
+        select: { id: true, username: true, avatarUrl: true, bio: true },
+      },
+    },
   });
 }
 
