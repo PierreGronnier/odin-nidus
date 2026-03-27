@@ -25,12 +25,11 @@ async function createConversation(data, participantIds) {
     });
 
     if (existingConversation) {
-      const error = new Error("A DM already exists with this user");
-      error.status = 409;
-      throw error;
+      return { conversation: existingConversation, created: false };
     }
   }
-  return await prisma.conversation.create({
+
+  const newConversation = await prisma.conversation.create({
     data: {
       ...data,
       participants: {
@@ -38,6 +37,7 @@ async function createConversation(data, participantIds) {
       },
     },
   });
+  return { conversation: newConversation, created: true };
 }
 
 async function updateConversation(id, data) {

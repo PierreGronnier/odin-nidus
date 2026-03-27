@@ -3,6 +3,7 @@ import Sidebar from "../components/sidebar/Sidebar";
 import ProfilePanel from "../components/panels/ProfilePanel";
 import RequestsPanel from "../components/panels/RequestsPanel";
 import FriendsPanel from "../components/panels/FriendsPanel";
+import ChatPanel from "../components/panels/ChatPanel";
 import "../styles/AppPage.css";
 
 export default function AppPage() {
@@ -18,6 +19,9 @@ export default function AppPage() {
         selectedFriendId={selectedFriend?.id}
       />
       <main className="app-main">
+        {activeTab === "messages" && selectedFriend && (
+          <ChatPanel friend={selectedFriend} />
+        )}
         {activeTab === "profile" && <ProfilePanel />}
         {activeTab === "requests" && <RequestsPanel />}
         {activeTab === "friends" && <FriendsPanel />}

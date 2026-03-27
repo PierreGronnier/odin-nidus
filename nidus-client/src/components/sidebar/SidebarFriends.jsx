@@ -8,6 +8,7 @@ export default function SidebarFriends({ onSelectFriend, selectedFriendId }) {
   const [friends, setFriends] = useState([]);
 
   useEffect(() => {
+    if (!user) return;
     const getFriends = async () => {
       try {
         const response = await api.get(`/friendships`);
@@ -22,7 +23,7 @@ export default function SidebarFriends({ onSelectFriend, selectedFriendId }) {
       }
     };
     getFriends();
-  }, []);
+  }, [user]);
 
   if (friends.length === 0) {
     return (

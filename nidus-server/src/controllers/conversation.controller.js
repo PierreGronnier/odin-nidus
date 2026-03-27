@@ -13,8 +13,11 @@ async function createConversationController(req, res, next) {
       ? { isGroup: true, name, avatarUrl } // groupe
       : { isGroup: false }; // DM
 
-    const conversation = await createConversation(data, participantIds);
-    res.status(201).json(conversation);
+    const { conversation, created } = await createConversation(
+      data,
+      participantIds,
+    );
+    res.status(created ? 201 : 200).json(conversation);
   } catch (error) {
     next(error);
   }
