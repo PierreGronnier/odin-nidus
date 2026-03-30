@@ -1,10 +1,15 @@
-import { MessageCircle, Users, UserPlus, UsersRound } from "lucide-react";
+import {
+  MessageCircle,
+  UsersRound,
+  UserPlus,
+  ContactRound,
+} from "lucide-react";
 
 const navItems = [
   { icon: MessageCircle, label: "Messages", id: "messages" },
-  { icon: Users, label: "Friends", id: "friends" },
+  { icon: UsersRound, label: "Friends", id: "friends" },
   { icon: UserPlus, label: "Requests", id: "requests" },
-  { icon: UsersRound, label: "Groups", id: "groups" },
+  { icon: ContactRound, label: "Groups", id: "groups" },
 ];
 
 export default function SidebarNav({ activeTab, onTabChange }) {

@@ -1,0 +1,65 @@
+import { useEffect, useState } from "react";
+import api from "../../services/axios.js";
+import useAuthStore from "../../store/authStore.js";
+import CreateGroupModal from "../modals/CreateGroupModal.jsx";
+import "../../styles/GroupsPanel.css";
+
+export default function GroupsPanel() {
+  const [error, setError] = useState("");
+  const { user } = useAuthStore();
+  const [groups, setGroups] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchGroups = async () => {
+    try {
+      const response = await api.get("/conversations");
+      const groupList = response.data
+        .filter((p) => p.conversation.isGroup)
+        .map((p) => p.conversation);
+      setGroups(groupList);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not fetch groups.");
+    }
+  };
+
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  return (
+    <div className="groups-panel">
+      <div className="groups-header">
+        <h2>My Groups</h2>
+        <button className="btn-add-group" onClick={() => setShowModal(true)}>
+          Add group
+        </button>
+      </div>
+
+      {error && <p className="groups-error">{error}</p>}
+
+      <div className="groups-list">
+        {groups.map((group) => (
+          <div key={group.id} className="group-item">
+            <div className="group-avatar">
+              {group.avatarUrl ? (
+                <img src={group.avatarUrl} alt={group.name} />
+              ) : (
+                <span>{group.name[0].toUpperCase()}</span>
+              )}
+            </div>
+            <span className="group-name">{group.name}</span>
+          </div>
+        ))}
+      </div>
+
+      {showModal && (
+        <CreateGroupModal
+          onClose={() => setShowModal(false)}
+          onGroupCreated={(newGroup) =>
+            setGroups((prev) => [newGroup, ...prev])
+          }
+        />
+      )}
+    </div>
+  );
+}

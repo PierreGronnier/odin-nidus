@@ -4,6 +4,7 @@ import ProfilePanel from "../components/panels/ProfilePanel";
 import RequestsPanel from "../components/panels/RequestsPanel";
 import FriendsPanel from "../components/panels/FriendsPanel";
 import ChatPanel from "../components/panels/ChatPanel";
+import GroupsPanel from "../components/panels/GroupsPanel";
 import "../styles/AppPage.css";
 
 export default function AppPage() {
@@ -25,6 +26,7 @@ export default function AppPage() {
         {activeTab === "profile" && <ProfilePanel />}
         {activeTab === "requests" && <RequestsPanel />}
         {activeTab === "friends" && <FriendsPanel />}
+        {activeTab === "groups" && <GroupsPanel />}
       </main>
     </div>
   );
