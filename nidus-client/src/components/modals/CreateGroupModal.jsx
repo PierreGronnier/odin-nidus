@@ -32,7 +32,6 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
     fetchFriends();
   }, []);
 
-  // Toggle friend selection
   const handleToggleFriend = (friendId) => {
     if (selectedIds.includes(friendId)) {
       setSelectedIds(selectedIds.filter((id) => id !== friendId));
@@ -41,7 +40,6 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
     }
   };
 
-  // Form submission
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setError("");

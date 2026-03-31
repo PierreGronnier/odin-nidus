@@ -177,6 +177,15 @@
   object-fit: cover;
 }
 
+.sidebar-section-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 1.25rem 0.25rem;
+}
+
 .sidebar-footer {
   margin-top: auto;
   padding: 0 0.75rem;

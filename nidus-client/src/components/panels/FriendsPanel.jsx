@@ -19,7 +19,7 @@ export default function FriendsPanel({ onStartConversation }) {
       );
       setFriends(friendList);
     } catch (error) {
-      setError(error.response?.data?.message || "Could not load friends.");
+      setError(error.response?.data?.message || "Could not fetch friends.");
     }
   };
 

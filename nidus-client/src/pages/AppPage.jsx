@@ -10,23 +10,50 @@ import "../styles/AppPage.css";
 export default function AppPage() {
   const [activeTab, setActiveTab] = useState("messages");
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "groups") setSelectedGroup(null);
+    if (tab !== "messages") setSelectedFriend(null);
+  };
+
+  const handleSelectGroup = (group) => {
+    setSelectedGroup(group);
+    setActiveTab("messages");
+  };
 
   return (
     <div className="app-layout">
       <Sidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         onSelectFriend={setSelectedFriend}
         selectedFriendId={selectedFriend?.id}
+        selectedGroup={selectedGroup}
+        onSelectGroup={handleSelectGroup}
       />
       <main className="app-main">
         {activeTab === "messages" && selectedFriend && (
           <ChatPanel friend={selectedFriend} />
         )}
+        {activeTab === "messages" && selectedGroup && !selectedFriend && (
+          <ChatPanel group={selectedGroup} />
+        )}
         {activeTab === "profile" && <ProfilePanel />}
         {activeTab === "requests" && <RequestsPanel />}
-        {activeTab === "friends" && <FriendsPanel />}
-        {activeTab === "groups" && <GroupsPanel />}
+        {activeTab === "friends" && (
+          <FriendsPanel
+            onStartConversation={(friend) => {
+              setSelectedFriend(friend);
+              setSelectedGroup(null);
+              setActiveTab("messages");
+            }}
+          />
+        )}
+        {activeTab === "groups" && (
+          <GroupsPanel onSelectGroup={handleSelectGroup} />
+        )}
       </main>
     </div>
   );

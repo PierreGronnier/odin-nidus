@@ -6,6 +6,7 @@ import api from "../../services/axios";
 import SidebarProfile from "./SidebarProfile";
 import SidebarNav from "./SidebarNav";
 import SidebarFriends from "./SidebarFriends";
+import SidebarGroups from "./SidebarGroups";
 import logo from "../../assets/nidus-logo.svg";
 import "../../styles/Sidebar.css";
 
@@ -14,6 +15,8 @@ export default function Sidebar({
   onTabChange,
   onSelectFriend,
   selectedFriendId,
+  selectedGroup,
+  onSelectGroup,
 }) {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
@@ -50,10 +53,18 @@ export default function Sidebar({
       <div className="sidebar-divider" />
 
       {activeTab === "messages" && (
-        <SidebarFriends
-          onSelectFriend={onSelectFriend}
-          selectedFriendId={selectedFriendId}
-        />
+        <>
+          <SidebarFriends
+            onSelectFriend={(friend) => {
+              onSelectFriend(friend);
+            }}
+            selectedFriendId={selectedFriendId}
+          />
+          <SidebarGroups
+            onSelectGroup={onSelectGroup}
+            selectedGroupId={selectedGroup?.id}
+          />
+        </>
       )}
 
       <div className="sidebar-footer">

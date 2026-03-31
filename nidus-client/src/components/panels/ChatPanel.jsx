@@ -4,13 +4,18 @@ import useAuthStore from "../../store/authStore.js";
 import { Send } from "lucide-react";
 import "../../styles/ChatPanel.css";
 
-export default function ChatPanel({ friend }) {
+export default function ChatPanel({ friend, group }) {
   const [error, setError] = useState("");
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [input, setInput] = useState("");
   const { user } = useAuthStore();
   const bottomRef = useRef(null);
+
+  const isGroup = !!group;
+
+  const name = isGroup ? group.name : friend?.username;
+  const avatar = isGroup ? group.avatarUrl : friend?.avatarUrl;
 
   const createConversation = async () => {
     try {
@@ -37,6 +42,7 @@ export default function ChatPanel({ friend }) {
 
   const sendMessage = async () => {
     if (!input.trim() || !conversationId) return;
+
     try {
       await api.post(`/conversations/${conversationId}/messages`, {
         content: input.trim(),
@@ -57,16 +63,32 @@ export default function ChatPanel({ friend }) {
 
   useEffect(() => {
     let interval;
-    const init = async () => {
-      const conversation = await createConversation();
-      setConversationId(conversation.id);
-      await fetchMessages(conversation.id);
-      interval = setInterval(() => fetchMessages(conversation.id), 3000);
-    };
-    init();
-    return () => clearInterval(interval);
-  }, [friend.id]);
 
+    const init = async () => {
+      let convId;
+
+      if (isGroup) {
+        convId = group.id;
+        setConversationId(group.id);
+      } else if (friend) {
+        const conversation = await createConversation();
+        if (!conversation) return;
+        convId = conversation.id;
+        setConversationId(conversation.id);
+      }
+
+      if (convId) {
+        await fetchMessages(convId);
+        interval = setInterval(() => fetchMessages(convId), 3000);
+      }
+    };
+
+    init();
+
+    return () => clearInterval(interval);
+  }, [friend, group]);
+
+  // auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -80,30 +102,34 @@ export default function ChatPanel({ friend }) {
 
   return (
     <div className="chat-panel">
+      {/* HEADER */}
       <div className="chat-header">
         <div className="chat-header-avatar">
-          {friend.avatarUrl ? (
-            <img src={friend.avatarUrl} alt={friend.username} />
+          {avatar ? (
+            <img src={avatar} alt={name} />
           ) : (
-            <span>{friend.username[0].toUpperCase()}</span>
+            <span>{name?.[0]?.toUpperCase()}</span>
           )}
         </div>
         <div className="chat-header-info">
-          <span className="chat-header-name">{friend.username}</span>
+          <span className="chat-header-name">{name}</span>
         </div>
       </div>
 
       {error && <p className="chat-error">{error}</p>}
 
+      {/* MESSAGES */}
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty">
             <p>No messages yet</p>
-            <span>Say hello to {friend.username}</span>
+            <span>Say hello to {name}</span>
           </div>
         )}
+
         {messages.map((message) => {
           const isMe = message.senderId === user.id;
+
           return (
             <div
               key={message.id}
@@ -111,16 +137,19 @@ export default function ChatPanel({ friend }) {
             >
               {!isMe && (
                 <div className="chat-bubble-avatar">
-                  {friend.avatarUrl ? (
-                    <img src={friend.avatarUrl} alt={friend.username} />
+                  {avatar ? (
+                    <img src={avatar} alt={name} />
                   ) : (
-                    <span>{friend.username[0].toUpperCase()}</span>
+                    <span>{name?.[0]?.toUpperCase()}</span>
                   )}
                 </div>
               )}
+
               <div className="chat-bubble-wrapper">
                 <div
-                  className={`chat-bubble ${isMe ? "bubble-me" : "bubble-them"}`}
+                  className={`chat-bubble ${
+                    isMe ? "bubble-me" : "bubble-them"
+                  }`}
                 >
                   {message.content}
                 </div>
@@ -131,6 +160,7 @@ export default function ChatPanel({ friend }) {
             </div>
           );
         })}
+
         <div ref={bottomRef} />
       </div>
 
@@ -141,8 +171,9 @@ export default function ChatPanel({ friend }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={`Message ${friend.username}...`}
+          placeholder={`Message ${name}...`}
         />
+
         <button
           className="chat-send-btn"
           onClick={sendMessage}
