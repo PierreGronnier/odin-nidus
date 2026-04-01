@@ -1,7 +1,29 @@
 import prisma from "../config/prisma.js";
 
 async function getConversationById(id) {
-  return await prisma.conversation.findUnique({ where: { id } });
+  return await prisma.conversation.findUnique({
+    where: { id },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          username: true,
+          avatarUrl: true,
+        },
+      },
+      participants: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 async function getUserConversations(userId) {

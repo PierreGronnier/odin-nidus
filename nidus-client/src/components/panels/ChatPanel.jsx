@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
-import { Send } from "lucide-react";
+import { Send, Info, Crown } from "lucide-react";
 import "../../styles/ChatPanel.css";
 
 export default function ChatPanel({ friend, group }) {
@@ -9,6 +9,7 @@ export default function ChatPanel({ friend, group }) {
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [input, setInput] = useState("");
+  const [members, setMembers] = useState(null);
   const { user } = useAuthStore();
   const bottomRef = useRef(null);
 
@@ -42,7 +43,6 @@ export default function ChatPanel({ friend, group }) {
 
   const sendMessage = async () => {
     if (!input.trim() || !conversationId) return;
-
     try {
       await api.post(`/conversations/${conversationId}/messages`, {
         content: input.trim(),
@@ -61,48 +61,64 @@ export default function ChatPanel({ friend, group }) {
     }
   };
 
+  const getMembers = useCallback(async (convId) => {
+    try {
+      const response = await api.get(`/conversations/${convId}`);
+      setMembers(response.data);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+    }
+  }, []);
+
   useEffect(() => {
+    setMessages([]);
+    setConversationId(null);
+
     let interval;
+    let cancelled = false;
 
     const init = async () => {
       let convId;
 
       if (isGroup) {
         convId = group.id;
-        setConversationId(group.id);
       } else if (friend) {
         const conversation = await createConversation();
         if (!conversation) return;
         convId = conversation.id;
-        setConversationId(conversation.id);
       }
 
-      if (convId) {
-        await fetchMessages(convId);
-        interval = setInterval(() => fetchMessages(convId), 3000);
-      }
+      if (!convId || cancelled) return;
+
+      setConversationId(convId);
+      await fetchMessages(convId);
+      if (isGroup) await getMembers(convId);
+
+      interval = setInterval(() => {
+        if (!cancelled) fetchMessages(convId);
+      }, 3000);
     };
 
     init();
 
-    return () => clearInterval(interval);
-  }, [friend, group]);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [friend?.id, group?.id]);
 
-  // auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const formatTime = (dateStr) => {
-    return new Date(dateStr).toLocaleTimeString("en-US", {
+  const formatTime = (dateStr) =>
+    new Date(dateStr).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
   return (
     <div className="chat-panel">
-      {/* HEADER */}
       <div className="chat-header">
         <div className="chat-header-avatar">
           {avatar ? (
@@ -111,14 +127,42 @@ export default function ChatPanel({ friend, group }) {
             <span>{name?.[0]?.toUpperCase()}</span>
           )}
         </div>
+
         <div className="chat-header-info">
           <span className="chat-header-name">{name}</span>
         </div>
+
+        {isGroup && (
+          <div className="group-info-icon-wrapper">
+            <Info size={16} />
+            <div className="group-members-tooltip">
+              <span className="tooltip-title">Members</span>
+              {members?.participants?.map((p) => {
+                const isOwner = members.owner?.id === p.user.id;
+                return (
+                  <div
+                    key={p.user.id}
+                    className={`member-item ${isOwner ? "member-item--owner" : ""}`}
+                  >
+                    <div className="member-avatar">
+                      {p.user.avatarUrl ? (
+                        <img src={p.user.avatarUrl} alt={p.user.username} />
+                      ) : (
+                        <span>{p.user.username[0]?.toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span className="member-name">{p.user.username}</span>
+                    {isOwner && <Crown size={12} className="owner-crown" />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {error && <p className="chat-error">{error}</p>}
 
-      {/* MESSAGES */}
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty">
@@ -129,6 +173,10 @@ export default function ChatPanel({ friend, group }) {
 
         {messages.map((message) => {
           const isMe = message.senderId === user.id;
+          const senderName = message.sender?.username;
+          const senderAvatar = isMe
+            ? user.avatarUrl
+            : message.sender?.avatarUrl;
 
           return (
             <div
@@ -137,19 +185,19 @@ export default function ChatPanel({ friend, group }) {
             >
               {!isMe && (
                 <div className="chat-bubble-avatar">
-                  {avatar ? (
-                    <img src={avatar} alt={name} />
+                  {senderAvatar ? (
+                    <img src={senderAvatar} alt={senderName} />
                   ) : (
-                    <span>{name?.[0]?.toUpperCase()}</span>
+                    <span>{senderName?.[0]?.toUpperCase()}</span>
                   )}
                 </div>
               )}
-
               <div className="chat-bubble-wrapper">
+                {isGroup && !isMe && (
+                  <span className="chat-sender-name">{senderName}</span>
+                )}
                 <div
-                  className={`chat-bubble ${
-                    isMe ? "bubble-me" : "bubble-them"
-                  }`}
+                  className={`chat-bubble ${isMe ? "bubble-me" : "bubble-them"}`}
                 >
                   {message.content}
                 </div>
@@ -173,7 +221,6 @@ export default function ChatPanel({ friend, group }) {
           onKeyDown={handleKeyDown}
           placeholder={`Message ${name}...`}
         />
-
         <button
           className="chat-send-btn"
           onClick={sendMessage}

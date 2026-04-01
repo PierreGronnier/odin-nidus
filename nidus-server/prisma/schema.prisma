@@ -24,10 +24,11 @@ model User {
   lastSeenAt   DateTime @default(now())
   createdAt    DateTime @default(now())
 
-  participants         ConversationParticipant[]
-  sentMessages         Message[]
-  friendshipRequester  Friendship[] @relation("FriendshipRequester")
-  friendshipReceiver   Friendship[] @relation("FriendshipReceiver")
+  participants        ConversationParticipant[]
+  sentMessages        Message[]
+  friendshipRequester Friendship[]              @relation("FriendshipRequester")
+  friendshipReceiver  Friendship[]              @relation("FriendshipReceiver")
+  conversations       Conversation[] @relation("ConversationOwner")
 }
 
 model Conversation {
@@ -36,9 +37,11 @@ model Conversation {
   name      String?
   avatarUrl String?
   createdAt DateTime @default(now())
+  ownerId   String? 
 
   participants ConversationParticipant[]
   messages     Message[]
+  owner        User? @relation("ConversationOwner", fields: [ownerId], references: [id])
 }
 
 model ConversationParticipant {
@@ -53,10 +56,10 @@ model ConversationParticipant {
 }
 
 model Message {
-  id             String   @id @default(uuid())
-  content        String?
-  imageUrl       String?
-  createdAt      DateTime @default(now())
+  id        String   @id @default(uuid())
+  content   String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
 
   senderId       String
   conversationId String

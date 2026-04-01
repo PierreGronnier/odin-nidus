@@ -3,8 +3,11 @@ import prisma from "../config/prisma.js";
 async function getMessages(conversationId) {
   return await prisma.message.findMany({
     where: { conversationId },
-    orderBy: {
-      createdAt: "asc",
+    orderBy: { createdAt: "asc" },
+    include: {
+      sender: {
+        select: { id: true, username: true, avatarUrl: true },
+      },
     },
   });
 }

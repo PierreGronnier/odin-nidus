@@ -20,6 +20,7 @@ export default function AppPage() {
 
   const handleSelectGroup = (group) => {
     setSelectedGroup(group);
+    setSelectedFriend(null);
     setActiveTab("messages");
   };
 
@@ -28,7 +29,10 @@ export default function AppPage() {
       <Sidebar
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        onSelectFriend={setSelectedFriend}
+        onSelectFriend={(friend) => {
+          setSelectedFriend(friend);
+          setSelectedGroup(null);
+        }}
         selectedFriendId={selectedFriend?.id}
         selectedGroup={selectedGroup}
         onSelectGroup={handleSelectGroup}
