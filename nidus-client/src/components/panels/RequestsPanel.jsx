@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../../services/axios.js";
 import "../../styles/RequestsPanel.css";
+import ConfirmModal from "../modals/ConfirmModal.jsx";
 
 export default function RequestsPanel() {
   const [query, setQuery] = useState("");
@@ -9,6 +10,7 @@ export default function RequestsPanel() {
   const [error, setError] = useState("");
   const [receivedRequests, setReceivedRequests] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
+  const [confirmCancel, setConfirmCancel] = useState(null);
 
   const fetchReceivedRequests = useCallback(async () => {
     try {
@@ -105,6 +107,7 @@ export default function RequestsPanel() {
   const handleCancelRequest = async (friendshipId) => {
     try {
       await api.delete(`/friendships/${friendshipId}/cancel`);
+      setConfirmCancel(null);
       await fetchSentRequests();
     } catch (error) {
       const status = error.response?.status;
@@ -236,7 +239,12 @@ export default function RequestsPanel() {
                 <div className="requests-actions">
                   <button
                     className="requests-cancel-btn"
-                    onClick={() => handleCancelRequest(request.id)}
+                    onClick={() =>
+                      setConfirmCancel({
+                        id: request.id,
+                        username: request.receiver.username,
+                      })
+                    }
                   >
                     Cancel
                   </button>
@@ -246,6 +254,16 @@ export default function RequestsPanel() {
           </div>
         )}
       </div>
+
+      {confirmCancel && (
+        <ConfirmModal
+          title="Cancel request"
+          message={`Are you sure you want to cancel your request to ${confirmCancel.username}?`}
+          danger
+          onConfirm={() => handleCancelRequest(confirmCancel.id)}
+          onCancel={() => setConfirmCancel(null)}
+        />
+      )}
     </div>
   );
 }

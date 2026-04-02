@@ -12,6 +12,7 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
   const [error, setError] = useState("");
   const [friends, setFriends] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch friends
   const fetchFriends = async () => {
@@ -49,6 +50,8 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       let avatarUrl = null;
       if (avatarFile) avatarUrl = await uploadImage(avatarFile);
@@ -66,6 +69,8 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -145,8 +150,12 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
             >
               Cancel
             </button>
-            <button type="submit" className="btn-primary profile-submit">
-              Create group
+            <button
+              type="submit"
+              className="btn-primary profile-submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating..." : "Create group"}
             </button>
           </div>
         </form>

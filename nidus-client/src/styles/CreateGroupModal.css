@@ -7,20 +7,6 @@
   padding-right: 0.25rem;
 }
 
-.friends-select-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.friends-select-list::-webkit-scrollbar-track {
-  background: var(--border);
-  border-radius: var(--radius-full);
-}
-
-.friends-select-list::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: var(--radius-full);
-}
-
 .friend-select-item {
   display: flex;
   align-items: center;
@@ -38,7 +24,7 @@
 }
 
 .friend-select-item.selected {
-  border-color: var(--accent);
+  border-color: var(--success);
   background: var(--accent-muted);
 }
 

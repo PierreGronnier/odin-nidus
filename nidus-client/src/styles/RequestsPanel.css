@@ -73,20 +73,6 @@
   padding-right: 0.25rem;
 }
 
-.requests-pending-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.requests-pending-list::-webkit-scrollbar-track {
-  background: var(--border);
-  border-radius: var(--radius-full);
-}
-
-.requests-pending-list::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: var(--radius-full);
-}
-
 .requests-user-card {
   display: flex;
   align-items: center;

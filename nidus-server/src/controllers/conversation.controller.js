@@ -10,7 +10,7 @@ async function createConversationController(req, res, next) {
     const { isGroup, name, avatarUrl, participantIds } = req.body;
 
     const data = isGroup
-      ? { isGroup: true, name, avatarUrl } // groupe
+      ? { isGroup: true, name, avatarUrl, ownerId: req.user.id } // groupe
       : { isGroup: false }; // DM
 
     const { conversation, created } = await createConversation(

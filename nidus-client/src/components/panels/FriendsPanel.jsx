@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import useAuthStore from "../../store/authStore.js";
 import api from "../../services/axios.js";
 import { MessageCircle, UserMinus } from "lucide-react";
+import ConfirmModal from "../modals/ConfirmModal.jsx";
 import "../../styles/FriendsPanel.css";
 
 export default function FriendsPanel({ onStartConversation }) {
   const [error, setError] = useState("");
   const { user } = useAuthStore();
   const [friends, setFriends] = useState([]);
+  const [friendToRemove, setFriendToRemove] = useState(null);
 
   const fetchFriends = async () => {
     try {
@@ -27,9 +29,10 @@ export default function FriendsPanel({ onStartConversation }) {
     fetchFriends();
   }, []);
 
-  const handleRemoveFriend = async (friendshipId) => {
+  const handleRemoveFriend = async () => {
     try {
-      await api.delete(`/friendships/${friendshipId}`);
+      await api.delete(`/friendships/${friendToRemove.friendshipId}`);
+      setFriendToRemove(null);
       await fetchFriends();
     } catch (error) {
       setError(error.response?.data?.message || "Could not remove friend.");
@@ -80,7 +83,12 @@ export default function FriendsPanel({ onStartConversation }) {
                 <button
                   className="friend-action-btn friend-remove-btn"
                   title="Remove friend"
-                  onClick={() => handleRemoveFriend(friend.friendshipId)}
+                  onClick={() =>
+                    setFriendToRemove({
+                      friendshipId: friend.friendshipId,
+                      username: friend.username,
+                    })
+                  }
                 >
                   <UserMinus size={15} />
                 </button>
@@ -88,6 +96,16 @@ export default function FriendsPanel({ onStartConversation }) {
             </div>
           ))}
         </div>
+      )}
+
+      {friendToRemove && (
+        <ConfirmModal
+          title="Remove friend"
+          message={`Are you sure you want to remove ${friendToRemove.username}?`}
+          danger
+          onConfirm={handleRemoveFriend}
+          onCancel={() => setFriendToRemove(null)}
+        />
       )}
     </div>
   );

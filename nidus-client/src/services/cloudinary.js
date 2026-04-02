@@ -12,5 +12,12 @@ export async function uploadImage(file) {
   );
 
   const data = await response.json();
+
+  if (!response.ok || !data.secure_url) {
+    const error = new Error(data.error?.message || "Image upload failed");
+    error.status = 400;
+    throw error;
+  }
+
   return data.secure_url;
 }

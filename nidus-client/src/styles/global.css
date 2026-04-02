@@ -31,6 +31,7 @@ button {
   background: none;
   font-family: inherit;
 }
+
 .btn-primary {
   background: var(--accent);
   color: #fff;
@@ -44,6 +45,21 @@ button {
 
 .btn-primary:hover {
   background: var(--accent-hover);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background var(--transition);
+  display: inline-block;
+}
+
+.btn-danger:hover {
+  background: #c94f4f;
 }
 
 .btn-ghost {
@@ -79,6 +95,23 @@ textarea {
 ul,
 ol {
   list-style: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 /* ── Dark mode (défaut) ── */
