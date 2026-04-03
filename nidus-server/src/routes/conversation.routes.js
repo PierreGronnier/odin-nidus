@@ -4,6 +4,9 @@ import {
   getUserConversationsController,
   getConversationByIdController,
   updateConversationController,
+  deleteConversationController,
+  addParticipantsController,
+  removeParticipantController,
 } from "../controllers/conversation.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import {
@@ -30,6 +33,21 @@ conversationRouter.put(
   authMiddleware,
   updateConversationValidator,
   updateConversationController,
+);
+conversationRouter.delete(
+  "/:conversationId",
+  authMiddleware,
+  deleteConversationController,
+);
+conversationRouter.put(
+  "/:conversationId/participants",
+  authMiddleware,
+  addParticipantsController,
+);
+conversationRouter.delete(
+  "/:conversationId/participants",
+  authMiddleware,
+  removeParticipantController,
 );
 
 export { conversationRouter };

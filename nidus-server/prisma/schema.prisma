@@ -41,7 +41,7 @@ model Conversation {
 
   participants ConversationParticipant[]
   messages     Message[]
-  owner        User? @relation("ConversationOwner", fields: [ownerId], references: [id])
+  owner        User? @relation("ConversationOwner", fields: [ownerId], references: [id],  onDelete: Cascade)
 }
 
 model ConversationParticipant {
@@ -65,7 +65,7 @@ model Message {
   conversationId String
 
   sender       User         @relation(fields: [senderId], references: [id])
-  conversation Conversation @relation(fields: [conversationId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id],  onDelete: Cascade)
 }
 
 model Friendship {

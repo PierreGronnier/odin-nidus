@@ -3,6 +3,9 @@ import {
   getUserConversations,
   createConversation,
   updateConversation,
+  deleteConversation,
+  addParticipants,
+  removeParticipants,
 } from "../services/conversation.service.js";
 
 async function createConversationController(req, res, next) {
@@ -45,10 +48,54 @@ async function updateConversationController(req, res, next) {
   try {
     const { name, avatarUrl } = req.body;
 
-    const conversation = await updateConversation(req.params.conversationId, {
-      name,
-      avatarUrl,
-    });
+    const conversation = await updateConversation(
+      req.params.conversationId,
+      req.user.id,
+      {
+        name,
+        avatarUrl,
+      },
+    );
+    res.status(200).json(conversation);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteConversationController(req, res, next) {
+  try {
+    const deleteConv = await deleteConversation(
+      req.params.conversationId,
+      req.user.id,
+    );
+    res.status(200).json(deleteConv);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function addParticipantsController(req, res, next) {
+  try {
+    const { participantIds } = req.body;
+    const conversation = await addParticipants(
+      req.params.conversationId,
+      req.user.id,
+      participantIds,
+    );
+    res.status(200).json(conversation);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function removeParticipantController(req, res, next) {
+  try {
+    const { participantIds } = req.body;
+    const conversation = await removeParticipants(
+      req.params.conversationId,
+      req.user.id,
+      participantIds,
+    );
     res.status(200).json(conversation);
   } catch (error) {
     next(error);
@@ -60,4 +107,7 @@ export {
   getUserConversationsController,
   getConversationByIdController,
   updateConversationController,
+  deleteConversationController,
+  addParticipantsController,
+  removeParticipantController,
 };
