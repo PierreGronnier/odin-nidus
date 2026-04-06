@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
-import { Send, Info, Crown } from "lucide-react";
+import { Send, Info, Crown, DoorOpen } from "lucide-react";
+import ConfirmModal from "../modals/ConfirmModal.jsx";
 import "../../styles/ChatPanel.css";
 
-export default function ChatPanel({ friend, group }) {
+export default function ChatPanel({ friend, group, onLeaveGroup }) {
   const [error, setError] = useState("");
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [input, setInput] = useState("");
   const [members, setMembers] = useState(null);
   const { user } = useAuthStore();
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const bottomRef = useRef(null);
 
   const isGroup = !!group;
@@ -117,6 +119,18 @@ export default function ChatPanel({ friend, group }) {
       minute: "2-digit",
     });
 
+  const handleLeaveGroup = async () => {
+    try {
+      await api.delete(`/conversations/${conversationId}/participants`, {
+        data: { participantIds: [user.id] },
+      });
+      setShowLeaveModal(false);
+      onLeaveGroup();
+    } catch (error) {
+      setError(error.response?.data?.message || "Could not leave group.");
+    }
+  };
+
   return (
     <div className="chat-panel">
       <div className="chat-header">
@@ -133,31 +147,48 @@ export default function ChatPanel({ friend, group }) {
         </div>
 
         {isGroup && (
-          <div className="group-info-icon-wrapper">
-            <Info size={16} />
-            <div className="group-members-tooltip">
-              <span className="tooltip-title">Members</span>
-              {members?.participants?.map((p) => {
-                const isOwner = members.owner?.id === p.user.id;
-                return (
-                  <div
-                    key={p.user.id}
-                    className={`member-item ${isOwner ? "member-item--owner" : ""}`}
-                  >
-                    <div className="member-avatar">
-                      {p.user.avatarUrl ? (
-                        <img src={p.user.avatarUrl} alt={p.user.username} />
-                      ) : (
-                        <span>{p.user.username[0]?.toUpperCase()}</span>
-                      )}
+          <>
+            <div className="group-info-icon-wrapper">
+              <Info size={20} />
+              <div className="group-members-tooltip">
+                <span className="tooltip-title">Members</span>
+                {members?.participants?.map((p) => {
+                  const isOwner = members.owner?.id === p.user.id;
+                  return (
+                    <div
+                      key={p.user.id}
+                      className={`member-item ${isOwner ? "member-item--owner" : ""}`}
+                    >
+                      <div className="member-avatar">
+                        {p.user.avatarUrl ? (
+                          <img src={p.user.avatarUrl} alt={p.user.username} />
+                        ) : (
+                          <span>{p.user.username[0]?.toUpperCase()}</span>
+                        )}
+                      </div>
+                      <span className="member-name">{p.user.username}</span>
+                      {isOwner && <Crown size={12} className="owner-crown" />}
                     </div>
-                    <span className="member-name">{p.user.username}</span>
-                    {isOwner && <Crown size={12} className="owner-crown" />}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+            <div
+              className="group-action-icon"
+              onClick={() => setShowLeaveModal(true)}
+            >
+              <DoorOpen size={20} />
+              {showLeaveModal && (
+                <ConfirmModal
+                  title="Leave group"
+                  message={`Are you sure you want to leave ${name}?`}
+                  danger
+                  onConfirm={handleLeaveGroup}
+                  onCancel={() => setShowLeaveModal(false)}
+                />
+              )}
+            </div>
+          </>
         )}
       </div>
 

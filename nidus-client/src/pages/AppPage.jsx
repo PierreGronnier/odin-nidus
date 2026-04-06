@@ -42,7 +42,12 @@ export default function AppPage() {
           <ChatPanel friend={selectedFriend} />
         )}
         {activeTab === "messages" && selectedGroup && !selectedFriend && (
-          <ChatPanel group={selectedGroup} />
+          <ChatPanel
+            group={selectedGroup}
+            onLeaveGroup={() => {
+              setSelectedGroup(null);
+            }}
+          />
         )}
         {activeTab === "profile" && <ProfilePanel />}
         {activeTab === "requests" && <RequestsPanel />}
