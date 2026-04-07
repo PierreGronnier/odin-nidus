@@ -5,15 +5,39 @@ import { uploadImage } from "../../services/cloudinary.js";
 import { Upload } from "lucide-react";
 import "../../styles/EditProfileModal.css";
 
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+
 export default function EditProfileModal({ onClose }) {
   const { user, setUser } = useAuthStore();
   const [username, setUsername] = useState(user.username);
   const [bio, setBio] = useState(user.bio || "");
   const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarError, setAvatarError] = useState("");
   const [error, setError] = useState("");
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setAvatarError("Please select an image file (PNG, JPG, WebP).");
+      setAvatarFile(null);
+      e.target.value = "";
+      return;
+    }
+
+    setAvatarError("");
+    setAvatarFile(file);
+  };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (avatarError) return;
     setError("");
 
     try {
@@ -81,10 +105,11 @@ export default function EditProfileModal({ onClose }) {
               <input
                 type="file"
                 accept="image/*"
-                style={{ display: "none" }}
-                onChange={(e) => setAvatarFile(e.target.files[0])}
+                hidden
+                onChange={handleAvatarChange}
               />
             </label>
+            {avatarError && <p className="field-error">{avatarError}</p>}
           </div>
 
           <div className="modal-actions">

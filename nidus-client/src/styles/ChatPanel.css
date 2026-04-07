@@ -89,18 +89,32 @@
   gap: 0.5rem;
 }
 
+.group-actions-container {
+  position: absolute;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .group-action-icon {
   display: flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: var(--text-muted);
-  transition: color var(--transition);
-  position: absolute;
-  right: 1.5rem; /* même padding que le header */
+  transition:
+    color var(--transition),
+    transform 0.2s;
 }
 
-.group-action-icon:hover {
+.group-action-icon.edit:hover {
+  color: var(--accent);
+}
+
+.group-action-icon.leave:hover {
   color: var(--danger);
+  transform: translateX(2px);
 }
 
 .tooltip-title {

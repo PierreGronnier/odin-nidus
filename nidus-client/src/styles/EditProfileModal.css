@@ -46,6 +46,12 @@
   margin-bottom: 1rem;
 }
 
+.field-error {
+  font-size: 0.8rem;
+  color: var(--danger);
+  margin-top: 0.2rem;
+}
+
 .profile-form {
   display: flex;
   flex-direction: column;

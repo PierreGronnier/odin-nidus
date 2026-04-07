@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
-import { Send, Info, Crown, DoorOpen } from "lucide-react";
+import { Send, Info, Crown, DoorOpen, Pencil } from "lucide-react";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
+import EditGroupModal from "../modals/EditGroupModal.jsx";
 import "../../styles/ChatPanel.css";
 
 export default function ChatPanel({ friend, group, onLeaveGroup }) {
@@ -13,6 +14,7 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
   const [members, setMembers] = useState(null);
   const { user } = useAuthStore();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const bottomRef = useRef(null);
 
   const isGroup = !!group;
@@ -173,20 +175,19 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
                 })}
               </div>
             </div>
-            <div
-              className="group-action-icon"
-              onClick={() => setShowLeaveModal(true)}
-            >
-              <DoorOpen size={20} />
-              {showLeaveModal && (
-                <ConfirmModal
-                  title="Leave group"
-                  message={`Are you sure you want to leave ${name}?`}
-                  danger
-                  onConfirm={handleLeaveGroup}
-                  onCancel={() => setShowLeaveModal(false)}
-                />
-              )}
+            <div className="group-actions-container">
+              <div
+                className="group-action-icon edit"
+                onClick={() => setShowEditModal(true)}
+              >
+                <Pencil size={20} />
+              </div>
+              <div
+                className="group-action-icon leave"
+                onClick={() => setShowLeaveModal(true)}
+              >
+                <DoorOpen size={20} />
+              </div>
             </div>
           </>
         )}
@@ -260,6 +261,23 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
           <Send size={16} />
         </button>
       </div>
+
+      {showLeaveModal && (
+        <ConfirmModal
+          title="Leave group"
+          message={`Are you sure you want to leave ${name}?`}
+          danger
+          onConfirm={handleLeaveGroup}
+          onCancel={() => setShowLeaveModal(false)}
+        />
+      )}
+      {showEditModal && (
+        <EditGroupModal
+          group={group}
+          members={members}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 }
