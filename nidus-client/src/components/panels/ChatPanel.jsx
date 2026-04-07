@@ -18,6 +18,7 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
   const bottomRef = useRef(null);
 
   const isGroup = !!group;
+  const isOwner = isGroup && members?.owner?.id === user?.id;
 
   const name = isGroup ? group.name : friend?.username;
   const avatar = isGroup ? group.avatarUrl : friend?.avatarUrl;
@@ -176,12 +177,14 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
               </div>
             </div>
             <div className="group-actions-container">
-              <div
-                className="group-action-icon edit"
-                onClick={() => setShowEditModal(true)}
-              >
-                <Pencil size={20} />
-              </div>
+              {isOwner && (
+                <div
+                  className="group-action-icon edit"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  <Pencil size={20} />
+                </div>
+              )}
               <div
                 className="group-action-icon leave"
                 onClick={() => setShowLeaveModal(true)}
