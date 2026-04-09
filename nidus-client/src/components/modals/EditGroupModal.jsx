@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import useAuthStore from "../../store/authStore.js";
+import useFriendStore from "../../store/friendStore.js";
+import useConversationStore from "../../store/conversationStore.js";
 import api from "../../services/axios.js";
 import { uploadImage } from "../../services/cloudinary.js";
 import "../../styles/EditGroupModal.css";
@@ -13,37 +15,27 @@ const ACCEPTED_IMAGE_TYPES = [
 
 export default function EditGroupModal({ group, members, onClose }) {
   const { user } = useAuthStore();
+  const { friends, fetchFriends } = useFriendStore();
+  const { updateGroup } = useConversationStore();
+
   const [name, setName] = useState(group.name);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarError, setAvatarError] = useState("");
   const [currentMembers, setCurrentMembers] = useState(
     members?.participants || [],
   );
-  const [friends, setFriends] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const originalIds = members?.participants.map((p) => p.user.id) || [];
   const currentIds = currentMembers.map((p) => p.user.id);
-
   const friendsNotInGroup = friends.filter((f) => !currentIds.includes(f.id));
 
   useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        const response = await api.get("/friendships");
-        const friendList = response.data.map((friendship) =>
-          friendship.requesterId === user.id
-            ? { ...friendship.receiver }
-            : { ...friendship.requester },
-        );
-        setFriends(friendList);
-      } catch {
-        // silently fail
-      }
-    };
-    fetchFriends();
-  }, [user.id]);
+    if (friends.length === 0 && user) {
+      fetchFriends(user.id);
+    }
+  }, []);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -81,6 +73,8 @@ export default function EditGroupModal({ group, members, onClose }) {
       }
 
       await api.put(`/conversations/${group.id}`, { name, avatarUrl });
+
+      updateGroup(group.id, { name, avatarUrl });
 
       const toAdd = currentIds.filter((id) => !originalIds.includes(id));
       const toRemove = originalIds.filter((id) => !currentIds.includes(id));

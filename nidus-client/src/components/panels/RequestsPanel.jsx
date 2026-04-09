@@ -1,127 +1,105 @@
-import { useState, useEffect, useCallback } from "react";
-import api from "../../services/axios.js";
+import { useState, useEffect } from "react";
+import useRequestStore from "../../store/requestStore.js";
 import "../../styles/RequestsPanel.css";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
 
 export default function RequestsPanel() {
+  const {
+    receivedRequests,
+    sentRequests,
+    fetchAll,
+    sendFriendRequest,
+    acceptRequest,
+    declineRequest,
+    cancelRequest,
+    error,
+    setError,
+    clearError,
+  } = useRequestStore();
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
-  const [error, setError] = useState("");
-  const [receivedRequests, setReceivedRequests] = useState([]);
-  const [sentRequests, setSentRequests] = useState([]);
   const [confirmCancel, setConfirmCancel] = useState(null);
 
-  const fetchReceivedRequests = useCallback(async () => {
-    try {
-      const response = await api.get("/friendships/pending");
-      setReceivedRequests(response.data);
-    } catch (error) {
-      console.error("Error fetching received requests:", error);
-    }
-  }, []);
-
-  const fetchSentRequests = useCallback(async () => {
-    try {
-      const response = await api.get("/friendships/sent");
-      setSentRequests(response.data);
-    } catch (error) {
-      console.error("Error fetching sent requests:", error);
-    }
-  }, []);
+  const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
-    fetchReceivedRequests();
-    fetchSentRequests();
-  }, [fetchReceivedRequests, fetchSentRequests]);
+    fetchAll();
+  }, []);
 
   const handleSearch = async () => {
-    setError("");
+    setSearchError("");
     setHasSearched(true);
     try {
+      const { default: api } = await import("../../services/axios.js");
       const response = await api.get(`/users/search?username=${query}`);
       setResults(response.data);
-    } catch (error) {
-      setError(error.response?.data?.message || "Can't find with this name");
+    } catch (err) {
+      setSearchError(
+        err.response?.data?.message || "Can't find with this name",
+      );
     }
   };
 
   const handleAddFriend = async (receiverId) => {
+    clearError();
     try {
-      await api.post("/friendships", { receiverId });
-      await fetchSentRequests();
-    } catch (error) {
-      const status = error.response?.status;
-      if (status === 400) {
-        setError("You can't add yourself as a friend");
-      } else if (status === 409) {
+      await sendFriendRequest(receiverId);
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 400) setError("You can't add yourself as a friend");
+      else if (status === 409)
         setError(
           "A friend request is already pending or you are already friends",
         );
-      } else {
-        setError(error.response?.data?.message || "Something went wrong.");
-      }
+      else setError(err.response?.data?.message || "Something went wrong.");
     }
   };
 
   const handleAcceptRequest = async (friendshipId) => {
+    clearError();
     try {
-      await api.put(`/friendships/${friendshipId}/accept`);
-      await Promise.all([fetchReceivedRequests(), fetchSentRequests()]);
-    } catch (error) {
-      const status = error.response?.status;
-      if (status === 404) {
-        setError("This friend request no longer exists.");
-        await Promise.all([fetchReceivedRequests(), fetchSentRequests()]);
-      } else if (status === 400) {
+      await acceptRequest(friendshipId);
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 404) setError("This friend request no longer exists.");
+      else if (status === 400)
         setError("This request has already been processed.");
-        await Promise.all([fetchReceivedRequests(), fetchSentRequests()]);
-      } else if (status === 403) {
+      else if (status === 403)
         setError("You are not authorized to accept this request.");
-      } else {
-        setError(error.response?.data?.message || "Failed to accept request.");
-      }
+      else setError(err.response?.data?.message || "Failed to accept request.");
     }
   };
 
   const handleDeclineRequest = async (friendshipId) => {
+    clearError();
     try {
-      await api.put(`/friendships/${friendshipId}/decline`);
-      await Promise.all([fetchReceivedRequests(), fetchSentRequests()]);
-    } catch (error) {
-      const status = error.response?.status;
-      if (status === 404) {
-        setError("This friend request no longer exists.");
-        await Promise.all([fetchReceivedRequests(), fetchSentRequests()]);
-      } else if (status === 400) {
+      await declineRequest(friendshipId);
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 404) setError("This friend request no longer exists.");
+      else if (status === 400)
         setError("This request has already been processed.");
-        await Promise.all([fetchReceivedRequests(), fetchSentRequests()]);
-      } else if (status === 403) {
+      else if (status === 403)
         setError("You are not authorized to decline this request.");
-      } else {
-        setError(error.response?.data?.message || "Failed to decline request.");
-      }
+      else
+        setError(err.response?.data?.message || "Failed to decline request.");
     }
   };
 
   const handleCancelRequest = async (friendshipId) => {
+    clearError();
     try {
-      await api.delete(`/friendships/${friendshipId}/cancel`);
+      await cancelRequest(friendshipId);
       setConfirmCancel(null);
-      await fetchSentRequests();
-    } catch (error) {
-      const status = error.response?.status;
-      if (status === 404) {
-        setError("This friend request no longer exists.");
-        await fetchSentRequests();
-      } else if (status === 400) {
-        setError("Cannot cancel this request.");
-        await fetchSentRequests();
-      } else if (status === 403) {
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 404) setError("This friend request no longer exists.");
+      else if (status === 400) setError("Cannot cancel this request.");
+      else if (status === 403)
         setError("You can only cancel your own requests.");
-      } else {
-        setError(error.response?.data?.message || "Failed to cancel request.");
-      }
+      else setError(err.response?.data?.message || "Failed to cancel request.");
     }
   };
 
@@ -129,7 +107,9 @@ export default function RequestsPanel() {
     <div className="requests-panel">
       <div>
         <h2 className="requests-section-title">Find friends</h2>
-        {error && <p className="requests-error">{error}</p>}
+        {(error || searchError) && (
+          <p className="requests-error">{error || searchError}</p>
+        )}
         <div className="requests-search">
           <input
             type="text"

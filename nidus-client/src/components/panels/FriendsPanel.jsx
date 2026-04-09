@@ -1,41 +1,28 @@
 import { useEffect, useState } from "react";
 import useAuthStore from "../../store/authStore.js";
-import api from "../../services/axios.js";
+import useFriendStore from "../../store/friendStore.js";
 import { MessageCircle, UserMinus } from "lucide-react";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
 import "../../styles/FriendsPanel.css";
 
 export default function FriendsPanel({ onStartConversation }) {
-  const [error, setError] = useState("");
   const { user } = useAuthStore();
-  const [friends, setFriends] = useState([]);
+  const { friends, fetchFriends, removeFriend, error, clearError } =
+    useFriendStore();
   const [friendToRemove, setFriendToRemove] = useState(null);
 
-  const fetchFriends = async () => {
-    try {
-      const response = await api.get("/friendships");
-      const friendList = response.data.map((friendship) =>
-        friendship.requesterId === user.id
-          ? { ...friendship.receiver, friendshipId: friendship.id }
-          : { ...friendship.requester, friendshipId: friendship.id },
-      );
-      setFriends(friendList);
-    } catch (error) {
-      setError(error.response?.data?.message || "Could not fetch friends.");
-    }
-  };
-
   useEffect(() => {
-    fetchFriends();
-  }, []);
+    if (!user) return;
+    // On fetch à l'ouverture du panel pour être à jour
+    fetchFriends(user.id);
+  }, [user]);
 
   const handleRemoveFriend = async () => {
     try {
-      await api.delete(`/friendships/${friendToRemove.friendshipId}`);
+      await removeFriend(friendToRemove.friendshipId);
       setFriendToRemove(null);
-      await fetchFriends();
-    } catch (error) {
-      setError(error.response?.data?.message || "Could not remove friend.");
+    } catch {
+      // l'erreur est déjà dans le store
     }
   };
 

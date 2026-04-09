@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react";
-import api from "../../services/axios.js";
+import { useEffect } from "react";
+import useConversationStore from "../../store/conversationStore.js";
 
 export default function SidebarGroups({ onSelectGroup, selectedGroupId }) {
-  const [groups, setGroups] = useState([]);
+  const { groups, fetchGroups } = useConversationStore();
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await api.get("/conversations");
-        const groupList = response.data
-          .filter((p) => p.conversation.isGroup)
-          .map((p) => p.conversation);
-        setGroups(groupList);
-      } catch (err) {
-        console.error("Could not fetch groups:", err);
-      }
-    };
-    fetchGroups();
+    // Ne fetch que si le store est vide (premier chargement)
+    if (groups.length === 0) {
+      fetchGroups();
+    }
   }, []);
 
   if (groups.length === 0) return null;

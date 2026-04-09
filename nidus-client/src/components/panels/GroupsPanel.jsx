@@ -1,29 +1,15 @@
 import { useEffect, useState } from "react";
-import api from "../../services/axios.js";
-import useAuthStore from "../../store/authStore.js";
+import useConversationStore from "../../store/conversationStore.js";
 import CreateGroupModal from "../modals/CreateGroupModal.jsx";
 import { MessageCircle } from "lucide-react";
 import "../../styles/GroupsPanel.css";
 
 export default function GroupsPanel({ onSelectGroup }) {
-  const [error, setError] = useState("");
-  const { user } = useAuthStore();
-  const [groups, setGroups] = useState([]);
+  const { groups, fetchGroups, addGroup, error } = useConversationStore();
   const [showModal, setShowModal] = useState(false);
 
-  const fetchGroups = async () => {
-    try {
-      const response = await api.get("/conversations");
-      const groupList = response.data
-        .filter((p) => p.conversation.isGroup)
-        .map((p) => p.conversation);
-      setGroups(groupList);
-    } catch (err) {
-      setError(err.response?.data?.message || "Could not fetch groups.");
-    }
-  };
-
   useEffect(() => {
+    // Toujours fetch à l'ouverture du panel pour être à jour
     fetchGroups();
   }, []);
 
@@ -70,9 +56,9 @@ export default function GroupsPanel({ onSelectGroup }) {
       {showModal && (
         <CreateGroupModal
           onClose={() => setShowModal(false)}
-          onGroupCreated={(newGroup) =>
-            setGroups((prev) => [newGroup, ...prev])
-          }
+          onGroupCreated={(newGroup) => {
+            addGroup(newGroup); // Met à jour le store → SidebarGroups se met à jour aussi
+          }}
         />
       )}
     </div>

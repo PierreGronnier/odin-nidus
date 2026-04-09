@@ -1,28 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useAuthStore from "../../store/authStore.js";
-import api from "../../services/axios.js";
+import useFriendStore from "../../store/friendStore.js";
 
 export default function SidebarFriends({ onSelectFriend, selectedFriendId }) {
-  const [error, setError] = useState("");
   const { user } = useAuthStore();
-  const [friends, setFriends] = useState([]);
+  const { friends, fetchFriends, error } = useFriendStore();
 
   useEffect(() => {
     if (!user) return;
-    const getFriends = async () => {
-      try {
-        const response = await api.get(`/friendships`);
-        const friendList = response.data.map((friendship) =>
-          friendship.requesterId === user.id
-            ? friendship.receiver
-            : friendship.requester,
-        );
-        setFriends(friendList);
-      } catch (error) {
-        setError(error.response?.data?.message);
-      }
-    };
-    getFriends();
+    // Ne fetch que si le store est vide (premier chargement)
+    if (friends.length === 0) {
+      fetchFriends(user.id);
+    }
   }, [user]);
 
   if (friends.length === 0) {

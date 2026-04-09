@@ -1,61 +1,69 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
+import useConversationStore from "../../store/conversationStore.js";
+import useMessageStore from "../../store/messageStore.js";
 import { Send, Info, Crown, DoorOpen, Pencil } from "lucide-react";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
 import EditGroupModal from "../modals/EditGroupModal.jsx";
 import "../../styles/ChatPanel.css";
 
 export default function ChatPanel({ friend, group, onLeaveGroup }) {
-  const [error, setError] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [conversationId, setConversationId] = useState(null);
   const [input, setInput] = useState("");
-  const [members, setMembers] = useState(null);
-  const { user } = useAuthStore();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const { user } = useAuthStore();
+  const {
+    removeGroup,
+    fetchConversationMembers,
+    conversationMembers,
+    createConversation,
+    currentConversation,
+    setCurrentConversation,
+    clearCurrentConversation,
+  } = useConversationStore();
+  const {
+    messages,
+    fetchMessages,
+    addMessage,
+    clearMessages,
+    error: messageError,
+  } = useMessageStore();
+
   const bottomRef = useRef(null);
 
   const isGroup = !!group;
+  const conversationId = currentConversation?.id;
+  const members = conversationMembers[conversationId];
   const isOwner = isGroup && members?.owner?.id === user?.id;
+
+  const currentMessages = messages[conversationId] || [];
+  const error = messageError;
 
   const name = isGroup ? group.name : friend?.username;
   const avatar = isGroup ? group.avatarUrl : friend?.avatarUrl;
 
-  const createConversation = async () => {
-    try {
-      const response = await api.post("/conversations", {
-        isGroup: false,
-        participantIds: [user.id, friend.id],
-      });
-      return response.data;
-    } catch (error) {
-      setError(
-        error.response?.data?.message || "Could not create conversation.",
-      );
-    }
-  };
-
-  const fetchMessages = useCallback(async (convId) => {
-    try {
-      const response = await api.get(`/conversations/${convId}/messages`);
-      setMessages(response.data);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  }, []);
-
   const sendMessage = async () => {
-    if (!input.trim() || !conversationId) return;
+    if (!input.trim() || !conversationId || sending) return;
+
+    setSending(true);
+
     try {
-      await api.post(`/conversations/${conversationId}/messages`, {
-        content: input.trim(),
-      });
+      const response = await api.post(
+        `/conversations/${conversationId}/messages`,
+        {
+          content: input.trim(),
+        },
+      );
+
+      addMessage(conversationId, response.data);
       setInput("");
-      await fetchMessages(conversationId);
     } catch (error) {
-      setError(error.response?.data?.message || "Could not send message.");
+      console.error("Could not send message:", error);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -66,55 +74,67 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
     }
   };
 
-  const getMembers = useCallback(async (convId) => {
-    try {
-      const response = await api.get(`/conversations/${convId}`);
-      setMembers(response.data);
-    } catch (error) {
-      console.error("Error fetching members:", error);
-    }
-  }, []);
-
   useEffect(() => {
-    setMessages([]);
-    setConversationId(null);
+    const initConversation = async () => {
+      if (conversationId) {
+        clearMessages(conversationId);
+      }
+      clearCurrentConversation();
 
-    let interval;
-    let cancelled = false;
-
-    const init = async () => {
       let convId;
+      let convData = null;
 
       if (isGroup) {
         convId = group.id;
+        convData = group;
       } else if (friend) {
-        const conversation = await createConversation();
+        const conversation = await createConversation(
+          [user.id, friend.id],
+          false,
+        );
         if (!conversation) return;
         convId = conversation.id;
+        convData = conversation;
       }
 
-      if (!convId || cancelled) return;
-
-      setConversationId(convId);
-      await fetchMessages(convId);
-      if (isGroup) await getMembers(convId);
-
-      interval = setInterval(() => {
-        if (!cancelled) fetchMessages(convId);
-      }, 3000);
+      if (convId) {
+        setCurrentConversation(convId, convData);
+        await fetchMessages(convId);
+        if (isGroup) {
+          await fetchConversationMembers(convId);
+        }
+      }
     };
 
-    init();
+    initConversation();
+
+    return () => {
+      if (conversationId) {
+        clearMessages(conversationId);
+      }
+      clearCurrentConversation();
+    };
+  }, [friend?.id, group?.id]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      if (!cancelled) {
+        await fetchMessages(conversationId);
+      }
+    }, 3000);
 
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [friend?.id, group?.id]);
+  }, [conversationId, fetchMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [currentMessages]);
 
   const formatTime = (dateStr) =>
     new Date(dateStr).toLocaleTimeString("en-US", {
@@ -127,10 +147,11 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
       await api.delete(`/conversations/${conversationId}/participants`, {
         data: { participantIds: [user.id] },
       });
+      removeGroup(conversationId);
       setShowLeaveModal(false);
       onLeaveGroup();
     } catch (error) {
-      setError(error.response?.data?.message || "Could not leave group.");
+      console.error("Could not leave group:", error);
     }
   };
 
@@ -199,14 +220,14 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
       {error && <p className="chat-error">{error}</p>}
 
       <div className="chat-messages">
-        {messages.length === 0 && (
+        {currentMessages.length === 0 && (
           <div className="chat-empty">
             <p>No messages yet</p>
             <span>Say hello to {name}</span>
           </div>
         )}
 
-        {messages.map((message) => {
+        {currentMessages.map((message) => {
           const isMe = message.senderId === user.id;
           const senderName = message.sender?.username;
           const senderAvatar = isMe
@@ -248,21 +269,25 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
       </div>
 
       <div className="chat-input-area">
-        <input
-          className="chat-input"
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={`Message ${name}...`}
-        />
-        <button
-          className="chat-send-btn"
-          onClick={sendMessage}
-          disabled={!input.trim()}
-        >
-          <Send size={16} />
-        </button>
+        <div className="input-wrapper">
+          <input
+            type="text"
+            className="chat-input"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={`Message ${name}...`}
+            disabled={sending}
+          />
+
+          <button
+            className="chat-send-btn"
+            onClick={sendMessage}
+            disabled={!input.trim() || sending}
+          >
+            {sending ? "..." : <Send size={16} />}
+          </button>
+        </div>
       </div>
 
       {showLeaveModal && (

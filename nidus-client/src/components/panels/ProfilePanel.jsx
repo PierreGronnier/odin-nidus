@@ -3,12 +3,16 @@ import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
 import { Mail, Calendar, Clock, Pencil } from "lucide-react";
 import "../../styles/ProfilePanel.css";
+import useFriendStore from "../../store/friendStore.js";
+import useConversationStore from "../../store/conversationStore.js";
 import EditProfileModal from "../modals/EditProfileModal.jsx";
 
 export default function ProfilePanel() {
   const { user, setUser } = useAuthStore();
   const [error, setError] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const { friends } = useFriendStore();
+  const { groups } = useConversationStore();
 
   useEffect(() => {
     const getInfo = async () => {
@@ -57,11 +61,11 @@ export default function ProfilePanel() {
 
         <div className="profile-stats">
           <div className="profile-stat">
-            <span className="profile-stat-value">0</span>
+            <span className="profile-stat-value">{friends.length}</span>
             <span className="profile-stat-label">Friends</span>
           </div>
           <div className="profile-stat">
-            <span className="profile-stat-value">0</span>
+            <span className="profile-stat-value">{groups.length}</span>
             <span className="profile-stat-label">Groups</span>
           </div>
         </div>

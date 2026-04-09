@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import useAuthStore from "../../store/authStore.js";
+import useFriendStore from "../../store/friendStore.js";
 import api from "../../services/axios.js";
 import { uploadImage } from "../../services/cloudinary.js";
 import { Upload } from "lucide-react";
@@ -7,30 +8,18 @@ import "../../styles/CreateGroupModal.css";
 
 export default function CreateGroupModal({ onClose, onGroupCreated }) {
   const { user } = useAuthStore();
+  const { friends, fetchFriends } = useFriendStore();
   const [groupName, setGroupName] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
   const [error, setError] = useState("");
-  const [friends, setFriends] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch friends
-  const fetchFriends = async () => {
-    try {
-      const response = await api.get("/friendships");
-      const friendList = response.data.map((friendship) =>
-        friendship.requesterId === user.id
-          ? { ...friendship.receiver, friendshipId: friendship.id }
-          : { ...friendship.requester, friendshipId: friendship.id },
-      );
-      setFriends(friendList);
-    } catch (err) {
-      setError(err.response?.data?.message || "Could not fetch friends.");
-    }
-  };
-
   useEffect(() => {
-    fetchFriends();
+    // Si le store a déjà les amis, pas besoin de refetch
+    if (friends.length === 0 && user) {
+      fetchFriends(user.id);
+    }
   }, []);
 
   const handleToggleFriend = (friendId) => {
@@ -63,9 +52,7 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
         participantIds: [user.id, ...selectedIds],
       });
 
-      // Callback to parent
       if (onGroupCreated) onGroupCreated(response.data);
-
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong.");
