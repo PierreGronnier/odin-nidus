@@ -1,22 +1,31 @@
 import { useState, useEffect } from "react";
 import useAuthStore from "../../store/authStore.js";
 import useFriendStore from "../../store/friendStore.js";
+import useToastStore from "../../store/toastStore";
 import api from "../../services/axios.js";
 import { uploadImage } from "../../services/cloudinary.js";
 import { Upload } from "lucide-react";
 import "../../styles/CreateGroupModal.css";
 
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+
 export default function CreateGroupModal({ onClose, onGroupCreated }) {
   const { user } = useAuthStore();
   const { friends, fetchFriends } = useFriendStore();
+  const { addToast } = useToastStore();
+
   const [groupName, setGroupName] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
-  const [error, setError] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
 
   useEffect(() => {
-    // Si le store a déjà les amis, pas besoin de refetch
     if (friends.length === 0 && user) {
       fetchFriends(user.id);
     }
@@ -30,20 +39,40 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
     }
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    if (!groupName.trim()) {
-      setError("Group name is required");
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      const msg = "Please select a valid image file (PNG, JPG, WebP).";
+      setAvatarError(msg);
+      addToast(msg, "error");
+      e.target.value = "";
       return;
     }
+
+    setAvatarError("");
+    setAvatarFile(file);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!groupName.trim()) {
+      addToast("Group name is required", "error");
+      return;
+    }
+
+    if (avatarError) return;
 
     setIsLoading(true);
 
     try {
       let avatarUrl = null;
-      if (avatarFile) avatarUrl = await uploadImage(avatarFile);
+
+      if (avatarFile) {
+        avatarUrl = await uploadImage(avatarFile);
+      }
 
       const response = await api.post("/conversations", {
         isGroup: true,
@@ -52,10 +81,15 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
         participantIds: [user.id, ...selectedIds],
       });
 
-      if (onGroupCreated) onGroupCreated(response.data);
+      addToast("Group created successfully", "success");
+
+      if (onGroupCreated) {
+        onGroupCreated(response.data);
+      }
+
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong.");
+      addToast(err.response?.data?.message || "Something went wrong.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -68,8 +102,6 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
           <h2>Create a group</h2>
           <p className="modal-subtitle">Add a name and invite your friends</p>
         </div>
-
-        {error && <p className="modal-error">{error}</p>}
 
         <form onSubmit={handleFormSubmit} className="profile-form">
           <div className="profile-field">
@@ -91,13 +123,14 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
               <input
                 type="file"
                 accept="image/*"
-                style={{ display: "none" }}
-                onChange={(e) => setAvatarFile(e.target.files[0])}
+                hidden
+                onChange={handleAvatarChange}
               />
             </label>
           </div>
 
           <label>Add members</label>
+
           {friends.length === 0 ? (
             <p className="friends-select-empty">No friends to add</p>
           ) : (
@@ -117,13 +150,8 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
                       <span>{friend.username[0].toUpperCase()}</span>
                     )}
                   </div>
+
                   <span className="friend-select-name">{friend.username}</span>
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(friend.id)}
-                    onChange={() => handleToggleFriend(friend.id)}
-                    style={{ display: "none" }}
-                  />
                 </div>
               ))}
             </div>
@@ -137,6 +165,7 @@ export default function CreateGroupModal({ onClose, onGroupCreated }) {
             >
               Cancel
             </button>
+
             <button
               type="submit"
               className="btn-primary profile-submit"

@@ -5,6 +5,8 @@ import RequestsPanel from "../components/panels/RequestsPanel";
 import FriendsPanel from "../components/panels/FriendsPanel";
 import ChatPanel from "../components/panels/ChatPanel";
 import GroupsPanel from "../components/panels/GroupsPanel";
+import ToastContainer from "../components/ui/ToastContainer";
+import MessageWelcome from "../components/panels/MessageWelcome.jsx";
 import "../styles/AppPage.css";
 
 export default function AppPage() {
@@ -38,6 +40,9 @@ export default function AppPage() {
         onSelectGroup={handleSelectGroup}
       />
       <main className="app-main">
+        {activeTab === "messages" && !selectedFriend && !selectedGroup && (
+          <MessageWelcome />
+        )}
         {activeTab === "messages" && selectedFriend && (
           <ChatPanel friend={selectedFriend} />
         )}
@@ -64,6 +69,7 @@ export default function AppPage() {
           <GroupsPanel onSelectGroup={handleSelectGroup} />
         )}
       </main>
+      <ToastContainer />
     </div>
   );
 }

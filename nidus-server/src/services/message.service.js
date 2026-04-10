@@ -15,6 +15,11 @@ async function getMessages(conversationId) {
 async function createMessage(data) {
   return await prisma.message.create({
     data,
+    include: {
+      sender: {
+        select: { id: true, username: true, avatarUrl: true },
+      },
+    },
   });
 }
 

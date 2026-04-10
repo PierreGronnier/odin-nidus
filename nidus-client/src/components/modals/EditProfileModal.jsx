@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useAuthStore from "../../store/authStore.js";
+import useToastStore from "../../store/toastStore";
 import api from "../../services/axios.js";
 import { uploadImage } from "../../services/cloudinary.js";
 import { Upload } from "lucide-react";
@@ -14,18 +15,21 @@ const ACCEPTED_IMAGE_TYPES = [
 
 export default function EditProfileModal({ onClose }) {
   const { user, setUser } = useAuthStore();
+  const { addToast } = useToastStore();
+
   const [username, setUsername] = useState(user.username);
   const [bio, setBio] = useState(user.bio || "");
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarError, setAvatarError] = useState("");
-  const [error, setError] = useState("");
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      setAvatarError("Please select an image file (PNG, JPG, WebP).");
+      const msg = "Please select an image file (PNG, JPG, WebP).";
+      setAvatarError(msg);
+      addToast(msg, "error");
       setAvatarFile(null);
       e.target.value = "";
       return;
@@ -38,7 +42,6 @@ export default function EditProfileModal({ onClose }) {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (avatarError) return;
-    setError("");
 
     try {
       let avatarUrl = user.avatarUrl;
@@ -47,11 +50,20 @@ export default function EditProfileModal({ onClose }) {
         avatarUrl = await uploadImage(avatarFile);
       }
 
-      const response = await api.put("/users/me", { username, bio, avatarUrl });
+      const response = await api.put("/users/me", {
+        username,
+        bio,
+        avatarUrl,
+      });
+
       setUser(response.data);
+      addToast("Profile updated successfully", "success");
       onClose();
     } catch (error) {
-      setError(error.response?.data?.message || "Something went wrong.");
+      addToast(
+        error.response?.data?.message || "Something went wrong.",
+        "error",
+      );
     }
   };
 
@@ -63,8 +75,6 @@ export default function EditProfileModal({ onClose }) {
           <p className="modal-subtitle">Update your personal information</p>
         </div>
 
-        {error && <p className="modal-error">{error}</p>}
-
         <form onSubmit={handleFormSubmit} className="profile-form">
           <div className="profile-field">
             <label htmlFor="username">Username</label>
@@ -73,7 +83,6 @@ export default function EditProfileModal({ onClose }) {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder={user.username}
             />
           </div>
 
@@ -83,7 +92,6 @@ export default function EditProfileModal({ onClose }) {
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell people about yourself..."
               rows={3}
             />
           </div>
@@ -99,6 +107,7 @@ export default function EditProfileModal({ onClose }) {
                 <span>{user.username?.[0]?.toUpperCase()}</span>
               )}
             </div>
+
             <label className="avatar-upload-btn">
               <Upload size={15} />
               <span>{avatarFile ? avatarFile.name : "Change photo"}</span>
@@ -109,14 +118,15 @@ export default function EditProfileModal({ onClose }) {
                 onChange={handleAvatarChange}
               />
             </label>
+
             {avatarError && <p className="field-error">{avatarError}</p>}
           </div>
 
           <div className="modal-actions">
             <button
               type="button"
-              className="btn-ghost profile-submit"
               onClick={onClose}
+              className="btn-ghost profile-submit"
             >
               Cancel
             </button>

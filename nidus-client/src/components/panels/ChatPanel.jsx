@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "../../services/axios.js";
 import useAuthStore from "../../store/authStore.js";
 import useConversationStore from "../../store/conversationStore.js";
 import useMessageStore from "../../store/messageStore.js";
+import useToastStore from "../../store/toastStore.js";
 import { Send, Info, Crown, DoorOpen, Pencil } from "lucide-react";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
 import EditGroupModal from "../modals/EditGroupModal.jsx";
@@ -15,6 +16,7 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
   const [sending, setSending] = useState(false);
 
   const { user } = useAuthStore();
+  const { addToast } = useToastStore();
   const {
     removeGroup,
     fetchConversationMembers,
@@ -62,6 +64,7 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
       setInput("");
     } catch (error) {
       console.error("Could not send message:", error);
+      addToast("Could not send message", "error");
     } finally {
       setSending(false);
     }
@@ -148,10 +151,12 @@ export default function ChatPanel({ friend, group, onLeaveGroup }) {
         data: { participantIds: [user.id] },
       });
       removeGroup(conversationId);
+      addToast("You left the group", "success");
       setShowLeaveModal(false);
       onLeaveGroup();
     } catch (error) {
       console.error("Could not leave group:", error);
+      addToast("Could not leave group", "error");
     }
   };
 

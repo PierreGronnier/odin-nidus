@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import useAuthStore from "../../store/authStore.js";
 import useFriendStore from "../../store/friendStore.js";
 import useConversationStore from "../../store/conversationStore.js";
+import useToastStore from "../../store/toastStore.js";
 import api from "../../services/axios.js";
 import { uploadImage } from "../../services/cloudinary.js";
 import "../../styles/EditGroupModal.css";
@@ -17,6 +18,7 @@ export default function EditGroupModal({ group, members, onClose }) {
   const { user } = useAuthStore();
   const { friends, fetchFriends } = useFriendStore();
   const { updateGroup } = useConversationStore();
+  const { addToast } = useToastStore();
 
   const [name, setName] = useState(group.name);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -91,9 +93,12 @@ export default function EditGroupModal({ group, members, onClose }) {
         });
       }
 
+      addToast("Group updated successfully", "success");
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong.");
+      const errorMsg = err.response?.data?.message || "Something went wrong.";
+      setError(errorMsg);
+      addToast(errorMsg, "error");
     } finally {
       setIsLoading(false);
     }

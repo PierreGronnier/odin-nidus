@@ -3,13 +3,14 @@ import useAuthStore from "../../store/authStore.js";
 import useFriendStore from "../../store/friendStore.js";
 import { MessageCircle, UserMinus } from "lucide-react";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
+import useToastStore from "../../store/toastStore";
 import "../../styles/FriendsPanel.css";
 
 export default function FriendsPanel({ onStartConversation }) {
   const { user } = useAuthStore();
-  const { friends, fetchFriends, removeFriend, error, clearError } =
-    useFriendStore();
+  const { friends, fetchFriends, removeFriend } = useFriendStore();
   const [friendToRemove, setFriendToRemove] = useState(null);
+  const { addToast } = useToastStore();
 
   useEffect(() => {
     if (!user) return;
@@ -21,7 +22,9 @@ export default function FriendsPanel({ onStartConversation }) {
     try {
       await removeFriend(friendToRemove.friendshipId);
       setFriendToRemove(null);
+      addToast("Friend removed");
     } catch {
+      addToast("Something went wrong", "error");
       // l'erreur est déjà dans le store
     }
   };
@@ -32,8 +35,6 @@ export default function FriendsPanel({ onStartConversation }) {
         <h1 className="friends-panel-title">Friends</h1>
         <span className="friends-panel-count">{friends.length}</span>
       </div>
-
-      {error && <p className="friends-error">{error}</p>}
 
       {friends.length === 0 ? (
         <div className="friends-empty">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import useRequestStore from "../../store/requestStore.js";
+import useToastStore from "../../store/toastStore";
 import "../../styles/RequestsPanel.css";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
 
@@ -12,16 +13,14 @@ export default function RequestsPanel() {
     acceptRequest,
     declineRequest,
     cancelRequest,
-    error,
-    setError,
-    clearError,
   } = useRequestStore();
+
+  const { addToast } = useToastStore();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(null);
-
   const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
@@ -31,75 +30,105 @@ export default function RequestsPanel() {
   const handleSearch = async () => {
     setSearchError("");
     setHasSearched(true);
+
     try {
       const { default: api } = await import("../../services/axios.js");
       const response = await api.get(`/users/search?username=${query}`);
       setResults(response.data);
     } catch (err) {
-      setSearchError(
-        err.response?.data?.message || "Can't find with this name",
-      );
+      const message =
+        err.response?.data?.message || "Can't find with this name";
+
+      setSearchError(message);
+      addToast(message, "error");
     }
   };
 
   const handleAddFriend = async (receiverId) => {
-    clearError();
     try {
       await sendFriendRequest(receiverId);
+      addToast("Friend request sent", "success");
     } catch (err) {
       const status = err.response?.status;
-      if (status === 400) setError("You can't add yourself as a friend");
-      else if (status === 409)
-        setError(
-          "A friend request is already pending or you are already friends",
-        );
-      else setError(err.response?.data?.message || "Something went wrong.");
+
+      let message;
+      if (status === 400) {
+        message = "You can't add yourself as a friend";
+      } else if (status === 409) {
+        message =
+          "A friend request is already pending or you are already friends";
+      } else {
+        message = err.response?.data?.message || "Something went wrong.";
+      }
+
+      addToast(message, "error");
     }
   };
 
   const handleAcceptRequest = async (friendshipId) => {
-    clearError();
     try {
       await acceptRequest(friendshipId);
+      addToast("Friend request accepted", "success");
     } catch (err) {
       const status = err.response?.status;
-      if (status === 404) setError("This friend request no longer exists.");
-      else if (status === 400)
-        setError("This request has already been processed.");
-      else if (status === 403)
-        setError("You are not authorized to accept this request.");
-      else setError(err.response?.data?.message || "Failed to accept request.");
+
+      let message;
+      if (status === 404) {
+        message = "This friend request no longer exists.";
+      } else if (status === 400) {
+        message = "This request has already been processed.";
+      } else if (status === 403) {
+        message = "You are not authorized to accept this request.";
+      } else {
+        message = err.response?.data?.message || "Failed to accept request.";
+      }
+
+      addToast(message, "error");
     }
   };
 
   const handleDeclineRequest = async (friendshipId) => {
-    clearError();
     try {
       await declineRequest(friendshipId);
+      addToast("Request declined", "success");
     } catch (err) {
       const status = err.response?.status;
-      if (status === 404) setError("This friend request no longer exists.");
-      else if (status === 400)
-        setError("This request has already been processed.");
-      else if (status === 403)
-        setError("You are not authorized to decline this request.");
-      else
-        setError(err.response?.data?.message || "Failed to decline request.");
+
+      let message;
+      if (status === 404) {
+        message = "This friend request no longer exists.";
+      } else if (status === 400) {
+        message = "This request has already been processed.";
+      } else if (status === 403) {
+        message = "You are not authorized to decline this request.";
+      } else {
+        message = err.response?.data?.message || "Failed to decline request.";
+      }
+
+      addToast(message, "error");
     }
   };
 
   const handleCancelRequest = async (friendshipId) => {
-    clearError();
     try {
       await cancelRequest(friendshipId);
+      addToast("Request cancelled", "success");
       setConfirmCancel(null);
     } catch (err) {
       const status = err.response?.status;
-      if (status === 404) setError("This friend request no longer exists.");
-      else if (status === 400) setError("Cannot cancel this request.");
-      else if (status === 403)
-        setError("You can only cancel your own requests.");
-      else setError(err.response?.data?.message || "Failed to cancel request.");
+
+      let message;
+      if (status === 404) {
+        message = "This friend request no longer exists.";
+      } else if (status === 400) {
+        message = "Cannot cancel this request.";
+      } else if (status === 403) {
+        message = "You can only cancel your own requests.";
+      } else {
+        message = err.response?.data?.message || "Failed to cancel request.";
+      }
+
+      addToast(message, "error");
     }
   };
 
@@ -107,9 +136,9 @@ export default function RequestsPanel() {
     <div className="requests-panel">
       <div>
         <h2 className="requests-section-title">Find friends</h2>
-        {(error || searchError) && (
-          <p className="requests-error">{error || searchError}</p>
-        )}
+
+        {searchError && <p className="requests-error">{searchError}</p>}
+
         <div className="requests-search">
           <input
             type="text"
@@ -124,9 +153,10 @@ export default function RequestsPanel() {
         </div>
 
         <div className="requests-results">
-          {hasSearched && results.length === 0 && (
+          {hasSearched && results.length === 0 && !searchError && (
             <p className="requests-empty">No users found</p>
           )}
+
           {results.map((user) => (
             <div key={user.id} className="requests-user-card">
               <div className="requests-user-avatar">
@@ -136,7 +166,9 @@ export default function RequestsPanel() {
                   <span>{user.username?.[0]?.toUpperCase()}</span>
                 )}
               </div>
+
               <span className="requests-user-name">{user.username}</span>
+
               <button
                 className="requests-add-btn"
                 onClick={() => handleAddFriend(user.id)}
@@ -152,6 +184,7 @@ export default function RequestsPanel() {
 
       <div>
         <h2 className="requests-section-title">Friend requests received</h2>
+
         {receivedRequests.length === 0 ? (
           <p className="requests-empty">No pending friend requests</p>
         ) : (
@@ -170,9 +203,11 @@ export default function RequestsPanel() {
                     </span>
                   )}
                 </div>
+
                 <span className="requests-user-name">
                   {request.requester.username}
                 </span>
+
                 <div className="requests-actions">
                   <button
                     className="requests-accept-btn"
@@ -180,6 +215,7 @@ export default function RequestsPanel() {
                   >
                     Accept
                   </button>
+
                   <button
                     className="requests-decline-btn"
                     onClick={() => handleDeclineRequest(request.id)}
@@ -197,6 +233,7 @@ export default function RequestsPanel() {
 
       <div>
         <h2 className="requests-section-title">Friend requests sent</h2>
+
         {sentRequests.length === 0 ? (
           <p className="requests-empty">No sent friend requests</p>
         ) : (
@@ -213,9 +250,11 @@ export default function RequestsPanel() {
                     <span>{request.receiver.username?.[0]?.toUpperCase()}</span>
                   )}
                 </div>
+
                 <span className="requests-user-name">
                   {request.receiver.username}
                 </span>
+
                 <div className="requests-actions">
                   <button
                     className="requests-cancel-btn"
