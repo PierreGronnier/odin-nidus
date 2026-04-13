@@ -124,3 +124,37 @@
   padding: 0.65rem 1.5rem;
   font-size: 0.9rem;
 }
+
+/* Confirm modal */
+.confirm-card {
+  max-width: 360px;
+}
+
+/* Mobile modals */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    margin: 0;
+    max-width: 100%;
+    padding: 1.5rem 1.25rem;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .confirm-card {
+    max-width: 100%;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .profile-submit {
+    width: 100%;
+    text-align: center;
+  }
+}

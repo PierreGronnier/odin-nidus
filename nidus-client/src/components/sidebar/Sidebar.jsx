@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Sun, Moon } from "lucide-react";
+import { LogOut, Sun, Moon, Menu, X } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import api from "../../services/axios";
 import SidebarProfile from "./SidebarProfile";
@@ -17,6 +17,8 @@ export default function Sidebar({
   selectedFriendId,
   selectedGroup,
   onSelectGroup,
+  mobileOpen,
+  onMobileClose,
 }) {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
@@ -37,31 +39,44 @@ export default function Sidebar({
     }
   };
 
+  const handleTabChange = (tab) => {
+    onTabChange(tab);
+    onMobileClose?.();
+  };
+
+  const handleSelectFriend = (friend) => {
+    onSelectFriend(friend);
+    onMobileClose?.();
+  };
+
+  const handleSelectGroup = (group) => {
+    onSelectGroup(group);
+    onMobileClose?.();
+  };
+
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${mobileOpen ? " mobile-open" : ""}`}>
       <div className="sidebar-header">
         <img src={logo} alt="Nidus" className="sidebar-logo" />
         <span className="sidebar-brand">Nidus</span>
       </div>
 
-      <SidebarProfile onTabChange={onTabChange} />
+      <SidebarProfile onTabChange={handleTabChange} />
 
       <div className="sidebar-divider" />
 
-      <SidebarNav activeTab={activeTab} onTabChange={onTabChange} />
+      <SidebarNav activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="sidebar-divider" />
 
       {activeTab === "messages" && (
         <>
           <SidebarFriends
-            onSelectFriend={(friend) => {
-              onSelectFriend(friend);
-            }}
+            onSelectFriend={handleSelectFriend}
             selectedFriendId={selectedFriendId}
           />
           <SidebarGroups
-            onSelectGroup={onSelectGroup}
+            onSelectGroup={handleSelectGroup}
             selectedGroupId={selectedGroup?.id}
           />
         </>

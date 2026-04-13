@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import "../styles/LandingPage.css";
+import ConstellationBackground from "../components/ui/ConstellationBackground";
 
 export default function LandingPage() {
   return (
     <div className="landing">
+      <ConstellationBackground />
       <main className="landing-hero">
         <p className="landing-eyebrow">Private messaging</p>
         <h1 className="landing-title">

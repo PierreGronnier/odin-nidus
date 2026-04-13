@@ -2,10 +2,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--border);
   font-size: 0.85rem;
   color: var(--text-secondary);
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .landing-footer a {
@@ -18,4 +20,13 @@
 
 .landing-footer a:hover {
   color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+  .landing-footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.8rem;
+  }
 }

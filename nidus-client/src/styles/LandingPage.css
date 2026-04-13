@@ -14,6 +14,7 @@
   margin: 0 auto;
   text-align: center;
   padding: 6rem 2rem;
+  z-index: 2;
 }
 
 .landing-eyebrow {
@@ -25,7 +26,7 @@
 }
 
 .landing-title {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.2rem, 6vw, 4.5rem);
   font-weight: 300;
   line-height: 1.1;
   letter-spacing: -0.03em;
@@ -53,4 +54,45 @@
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .landing-hero {
+    padding: 4rem 1.5rem;
+  }
+
+  .landing-subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .landing-hero {
+    padding: 3rem 1.25rem;
+  }
+
+  .landing-eyebrow {
+    font-size: 0.75rem;
+  }
+
+  .landing-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .landing-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .landing-cta .btn-primary,
+  .landing-cta .btn-ghost {
+    text-align: center;
+    padding: 0.9rem 1.5rem;
+  }
 }
