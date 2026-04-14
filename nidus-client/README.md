@@ -1,18 +1,107 @@
-# React + Vite
+# Nidus Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend of Nidus, built with **React 19** and **Vite**. It communicates with the Nidus server via a REST API and manages all UI state with **Zustand** stores.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Stack
 
-## React Compiler
+| Tool | Purpose |
+|---|---|
+| React 19 + Vite | UI framework & build tool |
+| React Router v7 | Client-side routing |
+| Zustand | Global state management |
+| Axios | HTTP client with interceptors |
+| Lucide React | Icons |
+| Cloudinary | Avatar image uploads |
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+---
 
-Note: This will impact Vite dev & build performances.
+## Project Structure
 
-## Expanding the ESLint configuration
+```
+src/
+├── pages/              # Top-level route components
+│   ├── LandingPage.jsx
+│   ├── LoginPage.jsx
+│   ├── RegisterPage.jsx
+│   ├── AppPage.jsx
+│   └── GoogleCallbackPage.jsx
+├── components/
+│   ├── sidebar/        # Sidebar + navigation items
+│   ├── panels/         # Main content panels (chat, friends, groups…)
+│   ├── modals/         # Overlays (edit profile, create/edit group, confirm)
+│   └── ui/             # Generic UI (toasts, constellation background)
+├── store/              # Zustand stores (auth, messages, friends…)
+├── services/           # Axios instance, Cloudinary upload helper
+└── styles/             # Per-component CSS files + global variables
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Routing
+
+| Path | Component | Access |
+|---|---|---|
+| `/` | `LandingPage` | Public only |
+| `/login` | `LoginPage` | Public only |
+| `/register` | `RegisterPage` | Public only |
+| `/auth/callback` | `GoogleCallbackPage` | Public |
+| `/app` | `AppPage` | Protected |
+
+`PublicRoute` redirects authenticated users to `/app`. `ProtectedRoute` redirects unauthenticated users to `/login`.
+
+---
+
+## State Management
+
+Each domain has its own Zustand store:
+
+| Store | Responsibility |
+|---|---|
+| `authStore` | Current user & access token |
+| `friendStore` | Friends list |
+| `requestStore` | Sent & received friend requests |
+| `conversationStore` | Groups, current conversation, members |
+| `messageStore` | Messages keyed by conversation ID |
+| `toastStore` | Toast notification queue |
+
+---
+
+## Authentication Flow
+
+1. On app load, `App.jsx` calls `POST /auth/refresh` to silently restore the session from the HTTP-only cookie.
+2. The returned access token is stored in `authStore` (in memory only — never in `localStorage`).
+3. Every Axios request attaches the token as a `Bearer` header.
+4. On a `401` response, the Axios interceptor automatically retries the refresh. If it fails, the user is logged out and redirected to `/login`.
+
+---
+
+## Environment Variables
+
+Create a `.env` file at the root of `nidus-client/`:
+
+```env
+VITE_API_URL=http://localhost:3000
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+```
+
+---
+
+## Available Scripts
+
+```bash
+npm run dev       # Start development server
+npm run build     # Production build
+npm run preview   # Preview production build
+npm run lint      # Run ESLint
+```
+
+---
+
+## Notes
+
+- **No `localStorage`** — tokens are kept in memory to reduce XSS exposure.
+- **Polling** — `ChatPanel` fetches new messages every 3 seconds via `setInterval`. This is intentional given the absence of WebSockets.
+- **Image uploads** — Avatars (user & group) are uploaded directly from the browser to Cloudinary using an unsigned upload preset. The returned URL is then saved via the API.
