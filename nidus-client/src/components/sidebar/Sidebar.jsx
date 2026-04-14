@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Sun, Moon, Menu, X } from "lucide-react";
+import { LogOut, Sun, Moon, Menu, X, Github } from "lucide-react";
 import useAuthStore from "../../store/authStore";
 import api from "../../services/axios";
 import SidebarProfile from "./SidebarProfile";
@@ -94,6 +94,16 @@ export default function Sidebar({
           <LogOut size={16} />
           <span>Log out</span>
         </button>
+
+        <a
+          className="sidebar-footer-btn"
+          href="https://github.com/PierreGronnier"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <Github size={16} />
+          <span>Made by Pierre Gronnier</span>
+        </a>
       </div>
     </aside>
   );
