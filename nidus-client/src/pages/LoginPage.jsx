@@ -87,7 +87,7 @@ export default function LoginPage() {
           </div>
 
           <a
-            href="http://localhost:3000/api/auth/google"
+            href="https://odin-nidus.vercel.app/api/auth/google"
             className="btn-ghost auth-google"
           >
             Continue with Google

@@ -1,0 +1,18 @@
+import { Link } from "react-router-dom";
+import { Home, AlertCircle } from "lucide-react";
+
+export default function NotFound() {
+  return (
+    <div className="not-found-container">
+      <div className="not-found-content">
+        <AlertCircle size={64} strokeWidth={1.5} />
+        <h1>404</h1>
+        <p>Oops! This page seems to be unavailable.</p>
+        <Link to="/" className="btn-primary not-found-link">
+          <Home size={18} />
+          Return to homepage
+        </Link>
+      </div>
+    </div>
+  );
+}
