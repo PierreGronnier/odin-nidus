@@ -64,6 +64,10 @@ export default function App() {
       </Route>
       <Route path="/auth/callback" element={<GoogleCallbackPage />} />
       <Route
+        path="/api/auth/google/callback"
+        element={<GoogleCallbackPage />}
+      />
+      <Route
         path="/app"
         element={
           <ProtectedRoute>
