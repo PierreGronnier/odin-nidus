@@ -16,19 +16,11 @@ const app = express();
 app.use(helmet());
 
 // CORS
+const allowedOrigin = "https://odin-nidus.vercel.app";
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "https://odin-nidus.vercel.app",
-        process.env.CLIENT_URL?.replace(/\/$/, ""),
-      ].filter(Boolean);
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
+    origin: allowedOrigin,
     credentials: true,
   }),
 );
