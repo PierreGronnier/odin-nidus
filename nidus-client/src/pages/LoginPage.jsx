@@ -9,6 +9,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [slowWarning, setSlowWarning] = useState(false);
 
   const navigate = useNavigate();
   const { setUser, setAccessToken } = useAuthStore();
@@ -16,17 +18,28 @@ export default function LoginPage() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSlowWarning(false);
     if (!email || !password) {
       setError("Please fill in both fields.");
       return;
     }
+    setIsLoading(true);
+
+    const timeoutId = setTimeout(() => {
+      setSlowWarning(true);
+    }, 5000);
+
     try {
       const response = await api.post("/auth/login", { email, password });
+      clearTimeout(timeoutId);
       setAccessToken(response.data.accessToken);
       setUser(response.data.safeUser);
       navigate("/app");
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err) {
+      clearTimeout(timeoutId);
+      setError(err.response?.data?.message || "Invalid email or password.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -51,6 +64,12 @@ export default function LoginPage() {
           </div>
 
           {error && <p className="auth-error">{error}</p>}
+          {slowWarning && (
+            <p className="auth-error" style={{ background: "var(--accent)" }}>
+              The server is waking up. This may take up to 45 seconds. Please
+              wait...
+            </p>
+          )}
 
           <form onSubmit={handleFormSubmit} className="auth-form">
             <div className="auth-field">
@@ -61,6 +80,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                disabled={isLoading}
               />
             </div>
             <div className="auth-field">
@@ -71,10 +91,15 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                disabled={isLoading}
               />
             </div>
-            <button type="submit" className="btn-primary auth-submit">
-              Log in
+            <button
+              type="submit"
+              className="btn-primary auth-submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging in..." : "Log in"}
             </button>
           </form>
 

@@ -11,6 +11,8 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [slowWarning, setSlowWarning] = useState(false);
 
   const navigate = useNavigate();
   const { setUser, setAccessToken } = useAuthStore();
@@ -18,6 +20,7 @@ export default function RegisterPage() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSlowWarning(false);
     if (!email || !password || !username) {
       setError("Please fill all fields.");
       return;
@@ -26,17 +29,27 @@ export default function RegisterPage() {
       setError("Passwords do not match.");
       return;
     }
+    setIsLoading(true);
+
+    const timeoutId = setTimeout(() => {
+      setSlowWarning(true);
+    }, 5000);
+
     try {
       const response = await api.post("/auth/register", {
         email,
         username,
         password,
       });
+      clearTimeout(timeoutId);
       setAccessToken(response.data.accessToken);
       setUser(response.data.safeUser);
       navigate("/app");
     } catch (error) {
+      clearTimeout(timeoutId);
       setError(error.response?.data?.message || "Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,6 +74,12 @@ export default function RegisterPage() {
           </div>
 
           {error && <p className="auth-error">{error}</p>}
+          {slowWarning && (
+            <p className="auth-error" style={{ background: "var(--accent)" }}>
+              The server is waking up. This may take up to 45 seconds. Please
+              wait...
+            </p>
+          )}
 
           <form onSubmit={handleFormSubmit} className="auth-form">
             <div className="auth-field">
@@ -71,6 +90,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                disabled={isLoading}
               />
             </div>
             <div className="auth-field">
@@ -81,6 +101,7 @@ export default function RegisterPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Username"
+                disabled={isLoading}
               />
             </div>
             <div className="auth-field">
@@ -91,6 +112,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                disabled={isLoading}
               />
             </div>
             <div className="auth-field">
@@ -101,10 +123,15 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
+                disabled={isLoading}
               />
             </div>
-            <button type="submit" className="btn-primary auth-submit">
-              Register
+            <button
+              type="submit"
+              className="btn-primary auth-submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
