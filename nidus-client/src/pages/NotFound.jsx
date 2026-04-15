@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Home, AlertCircle } from "lucide-react";
+import "../styles/NotFound.css";
 
 export default function NotFound() {
   return (
