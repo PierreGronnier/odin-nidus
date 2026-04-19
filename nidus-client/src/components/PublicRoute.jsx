@@ -2,7 +2,9 @@ import useAuthStore from "../store/authStore";
 import { Navigate } from "react-router-dom";
 
 export default function PublicRoute({ children }) {
-  const { accessToken } = useAuthStore();
+  const { accessToken, isLoading } = useAuthStore();
+
+  if (isLoading) return null;
 
   if (!accessToken) {
     return children;

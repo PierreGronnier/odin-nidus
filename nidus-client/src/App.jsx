@@ -13,7 +13,7 @@ import api from "./services/axios";
 import useAuthStore from "./store/authStore";
 
 export default function App() {
-  const { setAccessToken, setUser } = useAuthStore();
+  const { setAccessToken, setUser, setIsLoading } = useAuthStore();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -28,6 +28,8 @@ export default function App() {
         console.warn("Session not found or expired");
         setUser(null);
         setAccessToken(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
