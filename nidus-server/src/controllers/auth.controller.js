@@ -73,13 +73,16 @@ async function logoutController(req, res, next) {
 async function refreshController(req, res, next) {
   try {
     const rftoken = req.cookies.refreshToken;
+    if (!rftoken) {
+      return res.status(401).json({ message: "No refresh token" });
+    }
     const decoded = jwt.verify(rftoken, process.env.JWT_REFRESH_SECRET);
     const accessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
       expiresIn: "15m",
     });
     res.json({ accessToken });
   } catch (error) {
-    next(error);
+    res.status(401).json({ message: "Invalid refresh token" });
   }
 }
 
